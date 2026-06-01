@@ -33,9 +33,18 @@ postgres://larabeauty:***@larabeauty_database:5432/larabeauty?sslmode=disable
 
 Bundles: **16 / 23 / 29 KWD** · Checkout upsell: **9 KWD**
 
-## Deploy (EasyPanel) — store online
+## Deploy (EasyPanel) — سريع (فرعين منفصلين)
 
-**Branch:** `main` or `deploy-fix` (same code)
+| Service | Git branch | Source path | Port |
+|---------|------------|-------------|------|
+| **Store** | **`lara-frontend`** | *(empty)* | 3000 |
+| **API** | **`lara-backend`** | *(empty)* | 8000 |
+
+طور على **`main`** → push يحدّث الفرعين (CI). دليل: [`easypanel/BRANCHES-FAST-DEPLOY.md`](./easypanel/BRANCHES-FAST-DEPLOY.md)
+
+## Deploy (monorepo) — بديل
+
+**Branch:** `main`
 
 | Service | Source path | Port | Domain |
 |---------|-------------|------|--------|
