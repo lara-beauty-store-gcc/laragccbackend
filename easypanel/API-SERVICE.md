@@ -5,9 +5,9 @@ Service name: api  (or backend — name does not set the git subfolder)
 Domain: api.larabeauty.store
 Git repo: lara-beauty-store-gcc/laragccbackend
 Branch: main
-Source path: backend           ← REQUIRED (not repo root)
+Source path: backend           ← OR leave empty (uses root Dockerfile → builds backend/)
 Build: Dockerfile
-Dockerfile file: Dockerfile    ← NOT backend/Dockerfile
+Dockerfile file: Dockerfile
 Domains proxy port: 8000
 ```
 

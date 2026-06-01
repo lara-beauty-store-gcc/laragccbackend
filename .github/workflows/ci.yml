@@ -41,14 +41,14 @@ jobs:
       - name: Docker build (backend context)
         run: docker build -t lara-backend:ci .
 
-  no-root-dockerfile:
+  root-dockerfile-monorepo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repo root must not have Dockerfile (EasyPanel conflict)
-        run: |
-          test ! -f Dockerfile || (echo "Remove root Dockerfile — use frontend/ or backend/" && exit 1)
-          echo "[OK] No root Dockerfile"
+      - name: Root Dockerfile builds API (EasyPanel empty source path)
+        run: docker build -t lara-root-api:ci .
+      - name: Dockerfile.store builds store from repo root
+        run: docker build -f Dockerfile.store -t lara-root-store:ci .
 
   docker-smoke:
     runs-on: ubuntu-latest

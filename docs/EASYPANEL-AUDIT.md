@@ -71,9 +71,9 @@ Build: frontend/ | Port: 3000
 |---------|--------|
 | Type | App |
 | Branch | `main` |
-| **Source path** | **`backend`** |
+| **Source path** | **`backend`** (or **empty** → uses root `Dockerfile`) |
 | Builder | **Dockerfile** |
-| **Dockerfile file** | **`Dockerfile`** |
+| **Dockerfile file** | **`Dockerfile`** (if path empty) or **`Dockerfile`** in `backend/` |
 | **Domains → Proxy port** | **8000** |
 | Domain | `api.larabeauty.store` |
 
@@ -151,4 +151,5 @@ curl http://127.0.0.1:8000/health
 - `backend/Dockerfile`
 - `backend/docker-entrypoint.sh`
 - `backend/package-lock.json`
-- **No** `/Dockerfile` at repo root (intentional)
+- `/Dockerfile` at repo root — **API only** when Source path is empty
+- `/Dockerfile.store` — **Store only** when Source path is empty

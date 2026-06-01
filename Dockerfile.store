@@ -1,0 +1,42 @@
+# EasyPanel STORE when Source path is EMPTY (repo root).
+# Preferred: Source path = frontend → uses frontend/Dockerfile instead.
+
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat curl
+WORKDIR /app
+
+FROM base AS deps
+COPY frontend/package.json frontend/package-lock.json ./
+RUN echo ">>> [store] npm ci (deps, monorepo root)" && npm ci --no-audit --no-fund
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY frontend/ .
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--max-old-space-size=2048
+RUN echo ">>> [store] npm run build" && npm run build && \
+    test -d .next || (echo "[FATAL] .next missing" && exit 1)
+
+FROM base AS runner
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+WORKDIR /app
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN echo ">>> [store] npm ci (production)" && \
+    npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+COPY frontend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:3000/api/health" >/dev/null || exit 1
+
+ENTRYPOINT ["docker-entrypoint.sh"]

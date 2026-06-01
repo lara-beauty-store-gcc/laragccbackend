@@ -1,12 +1,12 @@
-# Do not deploy the repository root on EasyPanel
+# EasyPanel — repo root vs subdirectory
 
-There is **no** root `Dockerfile`. Deploy two **App** services:
+EasyPanel often clones the **full repo** into `.../code/` with **empty Source path**.
 
-| Service | Source path | Dockerfile file | Proxy port |
-|---------|-------------|-----------------|------------|
-| Store | `frontend` | `Dockerfile` | 3000 |
-| API | `backend` | `Dockerfile` | 8000 |
+| Service | Empty Source path (repo root) | Preferred Source path |
+|---------|------------------------------|------------------------|
+| **API** | Root `Dockerfile` (builds `backend/`) | `backend` → `Dockerfile` |
+| **Store** | Root `Dockerfile.store` | `frontend` → `Dockerfile` |
 
-If Source path is empty, EasyPanel may use Buildpacks on this folder and fail in seconds.
+**API error `open Dockerfile: no such file`** → pull latest `main` (root `Dockerfile` restored).
 
 See: `docs/EASYPANEL-AUDIT.md`
