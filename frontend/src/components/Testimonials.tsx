@@ -1,8 +1,8 @@
 import { getTestimonials } from '@/lib/marketing';
-import type { Product } from '@/config/products';
+import type { ProductConfig } from '@/config/products';
 import { Stars } from './Stars';
 
-export function Testimonials({ product }: { product?: Product }) {
+export function Testimonials({ product }: { product?: ProductConfig }) {
   const items = getTestimonials(product);
 
   return (

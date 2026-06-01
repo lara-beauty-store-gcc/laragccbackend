@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getProductBySlug, products } from '@/config/products';
-import { ProductPageView } from '@/components/ProductPageView';
+import { ProductLandingPage } from '@/components/product/ProductLandingPage';
 import { SiteFooter } from '@/components/SiteFooter';
 
 export function generateStaticParams() {
@@ -22,7 +22,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   return (
     <>
-      <ProductPageView product={product} />
+      <ProductLandingPage product={product} />
       <SiteFooter />
     </>
   );

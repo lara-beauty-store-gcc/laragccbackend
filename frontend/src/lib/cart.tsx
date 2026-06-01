@@ -8,29 +8,37 @@ import {
   useMemo,
   useState,
 } from 'react';
-import type { Product } from '@/config/products';
+import type { ProductConfig } from '@/config/products';
+import type { ProductOffer } from '@/config/types';
 
-export type CartItem = {
-  product: Product;
+export type CartLine = {
+  productId: string;
+  slug: string;
+  sku: string;
+  name: string;
+  offerId: string;
+  offerQuantity: number;
+  offerLabel: string;
+  price: number;
   qty: number;
 };
 
 type CartContextValue = {
-  items: CartItem[];
-  add: (product: Product, qty?: number) => void;
-  remove: (productId: string) => void;
+  items: CartLine[];
+  addOffer: (product: ProductConfig, offer: ProductOffer, qty?: number) => void;
+  remove: (productId: string, offerId: string) => void;
   clear: () => void;
   count: number;
+  total: number;
   isOpen: boolean;
   setOpen: (open: boolean) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-
-const STORAGE_KEY = 'lara-cart';
+const STORAGE_KEY = 'lara-cart-v2';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartLine[]>([]);
   const [isOpen, setOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -49,35 +57,65 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
-  const add = useCallback((product: Product, qty = 1) => {
-    setItems((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.product.id === product.id
-            ? { ...i, qty: i.qty + qty }
-            : i,
+  const addOffer = useCallback(
+    (product: ProductConfig, offer: ProductOffer, qty = 1) => {
+      setItems((prev) => {
+        const existing = prev.find(
+          (i) => i.productId === product.id && i.offerId === offer.id,
         );
-      }
-      return [...prev, { product, qty }];
-    });
-    setOpen(true);
-  }, []);
+        if (existing) {
+          return prev.map((i) =>
+            i.productId === product.id && i.offerId === offer.id
+              ? { ...i, qty: i.qty + qty }
+              : i,
+          );
+        }
+        return [
+          ...prev,
+          {
+            productId: product.id,
+            slug: product.slug,
+            sku: product.sku,
+            name: product.name,
+            offerId: offer.id,
+            offerQuantity: offer.quantity,
+            offerLabel: offer.label,
+            price: offer.price,
+            qty,
+          },
+        ];
+      });
+      setOpen(true);
+    },
+    [],
+  );
 
-  const remove = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((i) => i.product.id !== productId));
+  const remove = useCallback((productId: string, offerId: string) => {
+    setItems((prev) =>
+      prev.filter((i) => !(i.productId === productId && i.offerId === offerId)),
+    );
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
 
-  const count = useMemo(
-    () => items.reduce((s, i) => s + i.qty, 0),
+  const count = useMemo(() => items.reduce((s, i) => s + i.qty, 0), [items]);
+  const total = useMemo(
+    () => items.reduce((s, i) => s + i.price * i.qty, 0),
     [items],
   );
 
   const value = useMemo(
-    () => ({ items, add, remove, clear, count, isOpen, setOpen }),
-    [items, add, remove, clear, count, isOpen],
+    () => ({
+      items,
+      addOffer,
+      remove,
+      clear,
+      count,
+      total,
+      isOpen,
+      setOpen,
+    }),
+    [items, addOffer, remove, clear, count, total, isOpen],
   );
 
   return (

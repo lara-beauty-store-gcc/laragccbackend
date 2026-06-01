@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { getFaqs } from '@/lib/marketing';
-import type { Product } from '@/config/products';
+import type { ProductConfig } from '@/config/products';
 import { IconPlus } from './icons';
 
-export function FAQAccordion({ product }: { product?: Product }) {
+export function FAQAccordion({ product }: { product?: ProductConfig }) {
   const faqs = getFaqs(product);
   const [open, setOpen] = useState<number | null>(0);
 

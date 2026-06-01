@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { products } from '@/config/products';
-import { formatPriceFrom } from '@/lib/marketing';
+import { products, getLowestOfferPrice } from '@/config/products';
+import { formatPriceFrom } from '@/lib/pricing';
 import { PremiumImagePlaceholder } from './PremiumImagePlaceholder';
 import { Stars } from './Stars';
 
@@ -14,7 +14,7 @@ export function FeaturedProducts() {
         ثلاث علكات. ثلاث احتياجات.
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-center text-sm text-muted">
-        اختاري علكة وحدة أو كمّلي الروتين — كل وحدة لها تركيبة مستقلة.
+        نوم، طاقة، وتركيز — عروض من 16 د.ك مع دفع عند الاستلام.
       </p>
 
       <div className="mt-8 space-y-8">
@@ -26,7 +26,7 @@ export function FeaturedProducts() {
             <Link href={`/products/${product.slug}`} className="block">
               <div className="relative p-4 pb-0">
                 <span className="absolute left-4 top-4 z-10 rounded-full bg-card/90 px-3 py-1 text-[10px] font-medium text-primary shadow-sm">
-                  {product.badgeText}
+                  {product.routineNameLocal}
                 </span>
                 <PremiumImagePlaceholder product={product} className="min-h-[240px]" />
               </div>
@@ -41,7 +41,7 @@ export function FeaturedProducts() {
                   <Stars rating={product.rating} count={product.reviewsCount} />
                 </div>
                 <p className="mt-3 font-arabic text-sm font-bold text-primary">
-                  {formatPriceFrom(product.priceFrom)}
+                  {formatPriceFrom(getLowestOfferPrice(product))}
                 </p>
                 <span className="mt-4 inline-block w-full rounded-xl border border-primary py-3 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white">
                   شوفي التفاصيل

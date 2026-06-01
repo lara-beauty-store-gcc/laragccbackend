@@ -1,6 +1,6 @@
-import type { Product } from '@/config/products';
+import type { ProductConfig } from '@/config/products';
 
-const hues: Record<Product['placeholderHue'], string> = {
+const hues: Record<ProductConfig['placeholderHue'], string> = {
   teal: 'from-teal-100 via-emerald-50 to-teal-200',
   amber: 'from-amber-100 via-orange-50 to-amber-200',
   indigo: 'from-indigo-100 via-violet-50 to-indigo-200',
@@ -11,7 +11,7 @@ export function PremiumImagePlaceholder({
   className = '',
   variant = 'product',
 }: {
-  product?: Pick<Product, 'placeholderHue' | 'shortName' | 'name'>;
+  product?: Pick<ProductConfig, 'placeholderHue' | 'shortName' | 'name'>;
   className?: string;
   variant?: 'hero' | 'product';
 }) {
@@ -36,7 +36,7 @@ export function PremiumImagePlaceholder({
                 />
               ))}
             </div>
-            <p className="text-sm font-medium text-primary/80">صورة المنتجات — تُضاف قريباً</p>
+            <p className="text-sm font-medium text-primary/80">صورة قريباً</p>
           </>
         ) : (
           <>
@@ -55,7 +55,9 @@ export function PremiumImagePlaceholder({
 export function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'h-9 w-9' : 'h-11 w-11';
   return (
-    <div className={`${dim} flex shrink-0 items-center justify-center rounded-full bg-primary text-accent`}>
+    <div
+      className={`${dim} flex shrink-0 items-center justify-center rounded-full bg-primary text-accent`}
+    >
       <span className="font-arabic text-lg font-bold">ل</span>
     </div>
   );
