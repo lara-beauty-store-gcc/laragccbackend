@@ -1,0 +1,29 @@
+# EasyPanel: optional "Compose" service — or deploy store + api as two App services
+services:
+  store:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      NEXT_PUBLIC_SITE_URL: https://larabeauty.store
+      NEXT_PUBLIC_API_URL: https://api.larabeauty.store
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: "8000"
+      FRONTEND_URL: https://larabeauty.store
+      CORS_ORIGINS: https://larabeauty.store,https://www.larabeauty.store
+      DATABASE_URL: ${DATABASE_URL}
