@@ -13,17 +13,16 @@ This repo fixes **both**.
 
 ## Build failures (most common on EasyPanel)
 
-### 1. Wrong source path ( #1 cause )
+### 1. Source path / Dockerfile file
 
-| Service | Required path | Port |
-|---------|---------------|------|
-| Store | `frontend` | 3000 |
-| API | `backend` | 8000 |
+| Service | Preferred source path | Port | Repo-root fallback |
+|---------|----------------------|------|-------------------|
+| Store | `frontend` | 3000 | Dockerfile file: **`Dockerfile.store`** |
+| API | `backend` | 8000 | Root **`Dockerfile`** (builds `backend/`) |
 
-If path is **empty (repo root)**:
+If the API service uses **empty source path** (repo root), EasyPanel runs root `Dockerfile` — that image is the **API**, not an error stub.
 
-- EasyPanel uses root `Dockerfile` → **now fails with clear ERROR message**
-- Or builds API instead of store → browser shows JSON / error page
+If the **store** uses repo root with root `Dockerfile`, you get the API on the store domain — set source path `frontend` or use `Dockerfile.store`.
 
 ### 2. Huge build context
 

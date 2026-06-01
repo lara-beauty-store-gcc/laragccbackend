@@ -1,15 +1,27 @@
-# STOP — do not deploy this file on EasyPanel for the store or API.
+# Lara Beauty API — monorepo root build (EasyPanel repo-root context)
 #
-# EasyPanel services:
-#   Store → Source path: frontend  → port 3000
-#   API   → Source path: backend   → port 8000
+# Use when the API service has an empty Source path (EasyPanel clones the full repo).
+# Preferred: Source path = backend (uses backend/Dockerfile instead).
 #
-# This Dockerfile exists only to fail fast if the repo root is used by mistake.
+# Store must NOT use this file — use Source path `frontend` or Dockerfile.store at repo root.
 
-FROM alpine:3.19
-RUN echo "" && \
-    echo "ERROR: Wrong EasyPanel source path." && \
-    echo "  Store: set path to 'frontend' (not repo root)" && \
-    echo "  API:   set path to 'backend'" && \
-    echo "" && \
-    exit 1
+FROM node:20-alpine
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+
+COPY backend/src ./src
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENV NODE_ENV=production
+ENV PORT=8000
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:8000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+ENTRYPOINT ["docker-entrypoint.sh"]

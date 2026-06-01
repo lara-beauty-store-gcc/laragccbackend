@@ -41,13 +41,16 @@ jobs:
       - name: Docker build (backend context)
         run: docker build -t lara-backend:ci .
 
-  root-dockerfile-fails:
+  root-dockerfile-api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Root Dockerfile must fail (wrong EasyPanel path guard)
-        run: |
-          docker build -t lara-root-guard . 2>&1 | tee build.log
-          if grep -q "Wrong EasyPanel source path" build.log; then exit 0; fi
-          echo "Expected root Dockerfile to fail with clear message"
-          exit 1
+      - name: Root Dockerfile builds API from monorepo (EasyPanel repo root)
+        run: docker build -t lara-root-api:ci .
+
+  root-dockerfile-store:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dockerfile.store builds frontend from monorepo root
+        run: docker build -f Dockerfile.store -t lara-root-store:ci .

@@ -11,7 +11,7 @@ echo "Node: $(node -v)"
 
 if [ ! -f "src/index.js" ]; then
   echo "[FATAL] src/index.js missing — wrong Docker build context?"
-  echo "EasyPanel must use Source path: backend"
+  echo "EasyPanel: Source path backend, or repo root with root Dockerfile"
   exit 1
 fi
 

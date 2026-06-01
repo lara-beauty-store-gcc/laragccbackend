@@ -28,9 +28,9 @@ Sans DNS, le site ne s’ouvre **jamais** (même si build OK).
 | Champ | Valeur |
 |-------|--------|
 | Branch | `main` |
-| Root / Source path | **`frontend`** |
+| Root / Source path | **`frontend`** (or empty + Dockerfile file `Dockerfile.store`) |
 | Builder | **Dockerfile** |
-| Dockerfile path | `Dockerfile` |
+| Dockerfile file | `Dockerfile` |
 | Port | **3000** |
 | Domain | `larabeauty.store` |
 
@@ -39,8 +39,9 @@ Sans DNS, le site ne s’ouvre **jamais** (même si build OK).
 | Champ | Valeur |
 |-------|--------|
 | Branch | `main` |
-| Root / Source path | **`backend`** |
+| Root / Source path | **`backend`** (or empty — root `Dockerfile` builds API) |
 | Builder | **Dockerfile** |
+| Dockerfile file | `Dockerfile` |
 | Port | **8000** |
 | Domain | `api.larabeauty.store` |
 
@@ -79,7 +80,8 @@ Build normal = **1–4 minutes**, pas 2 secondes.
 
 | Symptôme | Cause |
 |----------|--------|
-| Build 2 sec | Mauvais path, ou ancien Dockerfile Alpine |
+| Build 2 sec | Ancien commit (guard Dockerfile), ou `npm ci` fail |
+| “Wrong EasyPanel source path” | Pull `main` — root Dockerfile builds API now |
 | Page ne fonctionne pas | DNS pas configuré |
 | Store blanc / JSON | API déployée sur le domaine store |
 | API down | Port 3000 au lieu de 8000, ou pas de DNS `api` |
