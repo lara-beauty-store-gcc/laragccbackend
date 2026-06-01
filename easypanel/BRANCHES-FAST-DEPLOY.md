@@ -4,8 +4,8 @@
 
 | فرع Git | EasyPanel service | Source path | Port |
 |---------|-------------------|-------------|------|
-| **`lara-frontend`** | Store | *(فارغ)* | 3000 |
-| **`lara-backend`** | API | *(فارغ)* | 8000 |
+| **`frontend`** أو `lara-frontend` | Store | *(فارغ)* | 3000 |
+| **`backend`** أو `lara-backend` | API | *(فارغ)* | 8000 |
 
 كل فرع فيه **التطبيق فقط** (مو monorepo كامل) → build أسرع.
 

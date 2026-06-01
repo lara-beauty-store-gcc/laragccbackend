@@ -49,5 +49,8 @@ git checkout main
 build_branch "lara-backend" "backend" "8000"
 git checkout main
 
+git branch -f frontend lara-frontend
+git branch -f backend lara-backend
+
 echo ""
-echo "Push: git push -f origin lara-frontend lara-backend"
+echo "Push: git push -f origin lara-frontend lara-backend frontend backend"
