@@ -1,23 +1,12 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
-
+# Deprecated: use backend/Dockerfile in EasyPanel (API service, port 8000)
 FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001 -G nodejs
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
+RUN apk add --no-cache libc6-compat
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 COPY src ./src
-
-USER nodejs
-EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-
+ENV NODE_ENV=production
+ENV PORT=8000
+ENV HOST=0.0.0.0
+EXPOSE 8000
 CMD ["node", "src/index.js"]
