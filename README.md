@@ -1,5 +1,27 @@
 # laragccbackend
 
+**Lara Beauty GCC** — Next.js storefront (COD, Kuwait, KWD) + Node.js CAPI backend.
+
+## Storefront (`frontend/`)
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+| Product | Page |
+|---------|------|
+| علكات لارا لدعم الذاكرة والتركيز | `/products/memory-focus` |
+| علكات لارا لدعم الطاقة والحيوية | `/products/energy-vitality` |
+| علكات المغنيسيوم للنوم والاسترخاء | `/products/magnesium-sleep` |
+
+Edit products: `frontend/src/config/products.ts` · Brand/Kuwait: `frontend/src/config/business.ts`
+
+EasyPanel: build `frontend/Dockerfile`, port **3000**.
+
+---
+
+## CAPI Backend
+
 Node.js **Conversion API (CAPI)** backend for Lara Beauty Store GCC.
 
 Forwards purchase/lead events to **Meta**, **TikTok**, **Snapchat**, logs to **Google Sheets**, optional **MaxMind** fraud check, and **PostgreSQL** audit log.
