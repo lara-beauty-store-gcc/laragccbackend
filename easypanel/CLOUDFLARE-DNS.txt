@@ -1,0 +1,10 @@
+# Copy into Cloudflare → DNS → Add record
+# Replace YOUR_SERVER_IP with EasyPanel VPS public IPv4
+
+A    @      YOUR_SERVER_IP    (Proxy: DNS only / grey cloud)
+A    api    YOUR_SERVER_IP    (Proxy: DNS only)
+CNAME www   larabeauty.store  (Proxy: DNS only)
+
+# EasyPanel Domains & Proxy:
+#   store → larabeauty.store → port 3000
+#   api   → api.larabeauty.store → port 8000

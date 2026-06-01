@@ -1,4 +1,6 @@
-# EasyPanel: optional "Compose" service — or deploy store + api as two App services
+# EasyPanel: New Service → Compose → paste this file (branch main)
+# Or use two App services (recommended): frontend path + backend path
+# DNS: Cloudflare A @ and api → server IP — see docs/CLOUDFLARE-DNS-FIX.md
 services:
   store:
     build:

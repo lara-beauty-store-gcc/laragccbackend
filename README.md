@@ -42,6 +42,6 @@ Bundles: **16 / 23 / 29 KWD** · Checkout upsell: **9 KWD**
 | Store | `frontend` | 3000 | larabeauty.store |
 | API | `backend` | 8000 | api.larabeauty.store |
 
-**DNS (obligatoire):** A record `@` et `api` → IP du serveur EasyPanel. Sans DNS, `larabeauty.store` = page not found.
+**DNS (obligatoire):** Domain uses **Cloudflare** — add **A** `@` + **A** `api` → IP serveur (grey cloud). Without this, `larabeauty.store` = page not found forever. → [`docs/CLOUDFLARE-DNS-FIX.md`](./docs/CLOUDFLARE-DNS-FIX.md)
 
 Guide: [`docs/EASYPANEL-DEPLOY.md`](./docs/EASYPANEL-DEPLOY.md) · [`docs/VIEW-STORE.md`](./docs/VIEW-STORE.md)
