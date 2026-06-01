@@ -96,14 +96,18 @@ function startServer() {
 }
 
 async function start() {
-  log.info('Starting API...', { port: config.port, env: config.appEnv });
+  log.info('========================================');
+  log.info('Lara Beauty API boot', {
+    port: config.port,
+    env: config.appEnv,
+    node: process.version,
+    databaseUrl: config.databaseUrl ? 'set' : 'missing',
+  });
+  log.info('========================================');
 
-  try {
-    const ok = await initDb();
-    if (ok) log.info('Database migrations complete');
-  } catch (err) {
-    log.error('Database init failed — API continues without DB:', err.message);
-  }
+  const ok = await initDb();
+  if (ok) log.info('Database migrations complete');
+  else log.warn('Running without database (orders may fail until DB is up)');
 
   startServer();
 }

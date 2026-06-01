@@ -20,9 +20,7 @@ This repo fixes **both**.
 | Store | `frontend` | 3000 | Dockerfile file: **`Dockerfile.store`** |
 | API | `backend` | 8000 | Root **`Dockerfile`** (builds `backend/`) |
 
-If the API service uses **empty source path** (repo root), EasyPanel runs root `Dockerfile` — that image is the **API**, not an error stub.
-
-If the **store** uses repo root with root `Dockerfile`, you get the API on the store domain — set source path `frontend` or use `Dockerfile.store`.
+**Repo root has no Dockerfile** — empty Source path causes Buildpack/instant failure. Always set `frontend` or `backend`.
 
 ### 2. Huge build context
 

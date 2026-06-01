@@ -4,11 +4,11 @@
 Service name: store
 Domain: larabeauty.store
 Git repo: lara-beauty-store-gcc/laragccbackend
-Branch: main   # أو deploy-fix
-Source path: frontend          ← recommended
+Branch: main
+Source path: frontend          ← REQUIRED (not repo root)
 Build: Dockerfile
-Dockerfile file: Dockerfile     ← or Dockerfile.store if source path is empty (repo root)
-Port: 3000
+Dockerfile file: Dockerfile    ← NOT frontend/Dockerfile
+Domains proxy port: 3000
 ```
 
 Environment:

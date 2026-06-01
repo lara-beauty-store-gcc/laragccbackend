@@ -43,7 +43,12 @@ export async function initDb() {
   }
 
   if (lastErr) {
-    throw lastErr;
+    log.warn(
+      'Database unavailable after retries — API continues without Postgres:',
+      lastErr.message,
+    );
+    pool = undefined;
+    return false;
   }
 
   await pool.query(`

@@ -4,16 +4,14 @@
 Service name: api  (or backend — name does not set the git subfolder)
 Domain: api.larabeauty.store
 Git repo: lara-beauty-store-gcc/laragccbackend
-Branch: main   # أو deploy-fix (نفس الـ commit)
-Source path: backend          ← recommended
+Branch: main
+Source path: backend           ← REQUIRED (not repo root)
 Build: Dockerfile
-Dockerfile file: Dockerfile   ← if source path is empty, root Dockerfile builds API
-Port: 8000
+Dockerfile file: Dockerfile    ← NOT backend/Dockerfile
+Domains proxy port: 8000
 ```
 
-**If build failed with “Wrong EasyPanel source path”:** pull latest `main` — root `Dockerfile` now builds the API from repo root.
-
-**Misconfig:** Service name `backend` is NOT the same as source path `backend`. Set **Source path** to `backend` in the Build tab, or leave it empty and use root `Dockerfile`.
+**Misconfig:** Service name `backend` ≠ Source path `backend`. The path must be set in Build → Source path.
 
 Environment:
 ```

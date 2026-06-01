@@ -16,10 +16,16 @@ function fraudCheckEnabled() {
   );
 }
 
+function parsePort(raw, fallback) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 1 || n > 65535) return fallback;
+  return n;
+}
+
 export const config = {
   appEnv: env('APP_ENV', 'production'),
   appName: env('APP_NAME', 'Lara GCC Backend'),
-  port: Number(env('PORT', '8000')),
+  port: parsePort(env('PORT', ''), 8000),
   apiBaseUrl: env('API_BASE_URL'),
   frontendUrl: env('FRONTEND_URL'),
   databaseUrl: env('DATABASE_URL'),
