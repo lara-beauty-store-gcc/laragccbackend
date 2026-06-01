@@ -2,39 +2,55 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { config, isConfigured } from './config.js';
-import { closeDb, initDb } from './db.js';
+import { closeDb, getPool, initDb } from './db.js';
 import { log } from './logger.js';
 import eventsRouter from './routes/events.js';
+import ordersRouter from './routes/orders.js';
 
 const app = express();
 
-app.use(helmet());
+app.set('trust proxy', 1);
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '1mb' }));
 
-const corsOptions = {
-  origin(origin, callback) {
-    if (!origin) return callback(null, true);
-    const allowed = config.corsOrigins.length
-      ? config.corsOrigins
-      : config.frontendUrl
-        ? [config.frontendUrl]
-        : [];
-    if (allowed.length === 0 || allowed.includes(origin) || allowed.includes('*')) {
-      return callback(null, true);
+function buildAllowedOrigins() {
+  const list = [...config.corsOrigins];
+  if (config.frontendUrl) list.push(config.frontendUrl);
+  list.push('https://larabeauty.store', 'https://www.larabeauty.store');
+  return [...new Set(list.filter(Boolean))];
+}
+
+const allowedOrigins = buildAllowedOrigins();
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || config.appEnv !== 'production') {
+        return callback(null, true);
+      }
+      return callback(new Error('CORS blocked'));
+    },
+    credentials: true,
+  }),
+);
+
+app.get('/health', async (_req, res) => {
+  let db = false;
+  const p = getPool();
+  if (p) {
+    try {
+      await p.query('SELECT 1');
+      db = true;
+    } catch {
+      db = false;
     }
-    return callback(new Error('CORS blocked'));
-  },
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-app.get('/health', (_req, res) => {
+  }
   res.json({
     status: 'ok',
     app: config.appName,
     env: config.appEnv,
-    gitSha: config.gitSha || undefined,
+    db,
     configured: isConfigured(),
   });
 });
@@ -45,12 +61,13 @@ app.get('/', (_req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      events: 'POST /api/events/:eventName (Purchase, Lead, …)',
-      checkout: 'POST /api/events',
+      orders: 'POST /api/v1/orders',
+      events: 'POST /api/events',
     },
   });
 });
 
+app.use('/api/v1/orders', ordersRouter);
 app.use('/api/events', eventsRouter);
 
 app.use((err, _req, res, _next) => {
@@ -70,6 +87,7 @@ async function start() {
 
   app.listen(config.port, '0.0.0.0', () => {
     log.info(`${config.appName} listening on 0.0.0.0:${config.port}`);
+    log.info('CORS:', allowedOrigins);
     log.info('Configured:', isConfigured());
   });
 }

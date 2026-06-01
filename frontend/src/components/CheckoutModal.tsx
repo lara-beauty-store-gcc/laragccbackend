@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { businessInputs } from '@/config/business';
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/marketing';
+import { isValidKuwaitPhone } from '@/lib/phone';
 
 const { market } = businessInputs;
 
@@ -38,6 +39,10 @@ export function CheckoutModal() {
       setError('الاسم ورقم الجوال مطلوبين');
       return;
     }
+    if (!isValidKuwaitPhone(phone)) {
+      setError('رقم جوال كويتي غير صحيح — مثال: 50001234');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -58,15 +63,33 @@ export function CheckoutModal() {
         paymentMethod: 'COD',
       };
 
+      let orderId = `LARA-${Date.now()}`;
+
       if (apiUrl) {
-        await fetch(`${apiUrl}/api/events`, {
+        const res = await fetch(`${apiUrl}/api/v1/orders`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            customerName: name.trim(),
+            phone: phone.replace(/\D/g, ''),
+            area: area.trim(),
+            items: items.map((i) => ({
+              productId: i.product.id,
+              sku: i.product.sku,
+              name: i.product.name,
+              bundleId: 'b1',
+              quantity: i.qty,
+            })),
+            sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+            eventId: `purchase_${Date.now()}`,
+          }),
         });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'order_failed');
+        }
+        orderId = data.orderNumber || data.orderId || orderId;
       }
-
-      const orderId = `LARA-${Date.now()}`;
       sessionStorage.setItem('lara-last-order', JSON.stringify({ ...payload, orderId }));
       clear();
       setOpen(false);
