@@ -8,7 +8,8 @@ Forwards purchase/lead events to **Meta**, **TikTok**, **Snapchat**, logs to **G
 
 1. **Build method:** Dockerfile (repo root `Dockerfile`)
 2. **Port:** `3000`
-3. **Environment:** copy `easypanel.env` → Environment tab
+3. **Environment:** copy `easypanel.env` or `stores/larabeauty.env` → Environment tab  
+   Secrets (Meta/TikTok tokens): see `docs/SECRETS.md`
 4. **Deploy**
 
 ## API
