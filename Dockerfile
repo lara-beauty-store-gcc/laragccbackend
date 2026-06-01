@@ -1,11 +1,15 @@
-# Use backend/Dockerfile in EasyPanel. This file kept for root-path builds only.
-FROM node:20-alpine
-WORKDIR /app
-RUN apk add --no-cache libc6-compat
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-COPY src ./src
-ENV NODE_ENV=production
-ENV PORT=8000
-EXPOSE 8000
-CMD ["node", "src/index.js"]
+# STOP — do not deploy this file on EasyPanel for the store or API.
+#
+# EasyPanel services:
+#   Store → Source path: frontend  → port 3000
+#   API   → Source path: backend   → port 8000
+#
+# This Dockerfile exists only to fail fast if the repo root is used by mistake.
+
+FROM alpine:3.19
+RUN echo "" && \
+    echo "ERROR: Wrong EasyPanel source path." && \
+    echo "  Store: set path to 'frontend' (not repo root)" && \
+    echo "  API:   set path to 'backend'" && \
+    echo "" && \
+    exit 1

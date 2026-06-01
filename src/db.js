@@ -4,26 +4,46 @@ import { log } from './logger.js';
 
 let pool;
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 export async function initDb() {
   if (!config.databaseUrl) {
     log.info('DATABASE_URL not set — database disabled');
     return false;
   }
 
-  pool = new pg.Pool({
-    connectionString: config.databaseUrl,
-    ssl: config.databaseUrl.includes('sslmode=require')
-      ? { rejectUnauthorized: false }
-      : undefined,
-    max: 10,
-    connectionTimeoutMillis: 8000,
-  });
+  const maxAttempts = 10;
+  let lastErr;
 
-  try {
-    await pool.query('SELECT 1');
-  } catch (err) {
-    pool = undefined;
-    throw err;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      pool = new pg.Pool({
+        connectionString: config.databaseUrl,
+        ssl: config.databaseUrl.includes('sslmode=require')
+          ? { rejectUnauthorized: false }
+          : undefined,
+        max: 10,
+        connectionTimeoutMillis: 8000,
+      });
+      await pool.query('SELECT 1');
+      lastErr = null;
+      log.info(`Database connected (attempt ${attempt}/${maxAttempts})`);
+      break;
+    } catch (err) {
+      lastErr = err;
+      pool = undefined;
+      log.warn(
+        `Database not ready (attempt ${attempt}/${maxAttempts}):`,
+        err.message,
+      );
+      if (attempt < maxAttempts) await sleep(2000);
+    }
+  }
+
+  if (lastErr) {
+    throw lastErr;
   }
 
   await pool.query(`

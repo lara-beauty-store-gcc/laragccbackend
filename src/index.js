@@ -78,19 +78,44 @@ app.use((err, _req, res, _next) => {
   return res.status(500).json({ error: 'internal_error' });
 });
 
-async function start() {
-  try {
-    await initDb();
-  } catch (err) {
-    log.error('Database init failed — API continues without DB', err.message);
-  }
+function startServer() {
+  const server = app.listen(config.port, '0.0.0.0', () => {
+    log.info('========================================');
+    log.info(`${config.appName} READY on 0.0.0.0:${config.port}`);
+    log.info('Health: GET /health');
+    log.info('Orders: POST /api/v1/orders');
+    log.info('CORS origins:', allowedOrigins.join(', ') || '(none)');
+    log.info('Configured:', JSON.stringify(isConfigured()));
+    log.info('========================================');
+  });
 
-  app.listen(config.port, '0.0.0.0', () => {
-    log.info(`${config.appName} listening on 0.0.0.0:${config.port}`);
-    log.info('CORS:', allowedOrigins);
-    log.info('Configured:', isConfigured());
+  server.on('error', (err) => {
+    log.error('Server listen error:', err);
+    process.exit(1);
   });
 }
+
+async function start() {
+  log.info('Starting API...', { port: config.port, env: config.appEnv });
+
+  try {
+    const ok = await initDb();
+    if (ok) log.info('Database migrations complete');
+  } catch (err) {
+    log.error('Database init failed — API continues without DB:', err.message);
+  }
+
+  startServer();
+}
+
+process.on('uncaughtException', (err) => {
+  log.error('uncaughtException:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  log.error('unhandledRejection:', err);
+});
 
 start().catch((err) => {
   log.error('Startup failed', err);
