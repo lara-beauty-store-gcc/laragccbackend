@@ -1,58 +1,34 @@
-# laragccbackend
+# Lara Beauty — لارا للجمال
 
-**Lara Beauty GCC** — Next.js storefront (COD, Kuwait, KWD) + Node.js CAPI backend.
+Kuwait DTC gummy store · **larabeauty.store** · COD only · KWD
 
-## Storefront (`frontend/`)
+## Documentation (for AI coder / team)
 
-```bash
-cd frontend && npm install && npm run dev
+**Start here:** [`docs/README.md`](./docs/README.md)
+
+**Copy-paste prompt for AI coder:** [`docs/prompts/AI_CODER_START_PROMPT.md`](./docs/prompts/AI_CODER_START_PROMPT.md)
+
+Full spec includes: architecture, CRO, Kuwaiti copy, design system, FastAPI backend, Next.js frontend, pixels/CAPI, Google Sheets, EasyPanel deploy.
+
+## Target stack (per docs)
+
+| Folder | Stack | Domain |
+|--------|-------|--------|
+| `frontend/` | Next.js 14, React, Tailwind | larabeauty.store |
+| `backend/` | Python FastAPI, Alembic, PostgreSQL | api.larabeauty.store |
+
+> Legacy Node CAPI at repo root may exist — new implementation follows `docs/07-backend-spec.md`.
+
+## Database (EasyPanel)
+
+```
+postgres://larabeauty:***@larabeauty_database:5432/larabeauty?sslmode=disable
 ```
 
-| Product | Page |
-|---------|------|
-| علكات لارا لدعم الذاكرة والتركيز | `/products/memory-focus` |
-| علكات لارا لدعم الطاقة والحيوية | `/products/energy-vitality` |
-| علكات المغنيسيوم للنوم والاسترخاء | `/products/magnesium-sleep` |
+## Products
 
-Edit products: `frontend/src/config/products.ts` · Brand/Kuwait: `frontend/src/config/business.ts`
+1. علكات المغنيسيوم لتحسين جودة النوم
+2. علكات عشبة العنزة ضد الإرهاق والتعب
+3. علكات ضد التشتت وضعف التركيز
 
-EasyPanel: build `frontend/Dockerfile`, port **3000**.
-
----
-
-## CAPI Backend
-
-Node.js **Conversion API (CAPI)** backend for Lara Beauty Store GCC.
-
-Forwards purchase/lead events to **Meta**, **TikTok**, **Snapchat**, logs to **Google Sheets**, optional **MaxMind** fraud check, and **PostgreSQL** audit log.
-
-## Deploy on EasyPanel
-
-1. **Build method:** Dockerfile (repo root `Dockerfile`)
-2. **Port:** `3000`
-3. **Environment:** copy `easypanel.env` or `stores/larabeauty.env` → Environment tab  
-   Secrets (Meta/TikTok tokens): see `docs/SECRETS.md`
-4. **Deploy**
-
-## API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| POST | `/api/events/Purchase` | Purchase event |
-| POST | `/api/events` | Body: `{ "eventName": "Purchase", "orderId", "value", "email", "phone", ... }` |
-
-## Local
-
-```bash
-npm install
-cp .env.example .env
-npm run dev
-```
-
-## Docker
-
-```bash
-docker build -t laragccbackend .
-docker run -p 3000:3000 --env-file .env laragccbackend
-```
+Bundles: **16 / 23 / 29 KWD** · Checkout upsell: **9 KWD**

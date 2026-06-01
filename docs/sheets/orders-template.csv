@@ -1,0 +1,1 @@
+order_number,created_at,customer_name,phone_e164,area_notes,items_json,subtotal_kwd,total_kwd,currency,payment_method,upsell_accepted,upsell_product,upsell_amount_kwd,event_id,source_url,status
