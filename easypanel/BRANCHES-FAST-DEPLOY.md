@@ -23,5 +23,5 @@
 
 ## EasyPanel
 
-**Store:** branch `lara-frontend` · path فارغ · port **3000**  
-**API:** branch `lara-backend` · path فارغ · port **8000**
+**Store:** branch **`frontend`** · path فارغ · port **3000**  
+**API:** branch **`backend`** · path فارغ · port **8000**
