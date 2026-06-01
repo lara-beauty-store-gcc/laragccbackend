@@ -32,3 +32,16 @@ postgres://larabeauty:***@larabeauty_database:5432/larabeauty?sslmode=disable
 3. علكات ضد التشتت وضعف التركيز
 
 Bundles: **16 / 23 / 29 KWD** · Checkout upsell: **9 KWD**
+
+## Deploy (EasyPanel) — store online
+
+**Branch:** `main` or `deploy-fix` (same code)
+
+| Service | Source path | Port | Domain |
+|---------|-------------|------|--------|
+| Store | `frontend` | 3000 | larabeauty.store |
+| API | `backend` | 8000 | api.larabeauty.store |
+
+**DNS (obligatoire):** A record `@` et `api` → IP du serveur EasyPanel. Sans DNS, `larabeauty.store` = page not found.
+
+Guide: [`docs/EASYPANEL-DEPLOY.md`](./docs/EASYPANEL-DEPLOY.md) · [`docs/VIEW-STORE.md`](./docs/VIEW-STORE.md)

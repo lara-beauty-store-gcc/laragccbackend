@@ -27,8 +27,8 @@ Sans DNS, le site ne s’ouvre **jamais** (même si build OK).
 
 | Champ | Valeur |
 |-------|--------|
-| Branch | `main` |
-| Root / Source path | **`frontend`** (or empty + Dockerfile file `Dockerfile.store`) |
+| Branch | **`main`** (أو `deploy-fix`) |
+| Root / Source path | **`frontend`** (obligatoire pour le store) |
 | Builder | **Dockerfile** |
 | Dockerfile file | `Dockerfile` |
 | Port | **3000** |
@@ -38,8 +38,8 @@ Sans DNS, le site ne s’ouvre **jamais** (même si build OK).
 
 | Champ | Valeur |
 |-------|--------|
-| Branch | `main` |
-| Root / Source path | **`backend`** (or empty — root `Dockerfile` builds API) |
+| Branch | **`main`** (أو `deploy-fix`) |
+| Root / Source path | **`backend`** |
 | Builder | **Dockerfile** |
 | Dockerfile file | `Dockerfile` |
 | Port | **8000** |

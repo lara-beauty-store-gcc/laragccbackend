@@ -4,7 +4,7 @@
 Service name: api  (or backend — name does not set the git subfolder)
 Domain: api.larabeauty.store
 Git repo: lara-beauty-store-gcc/laragccbackend
-Branch: main
+Branch: main   # أو deploy-fix (نفس الـ commit)
 Source path: backend          ← recommended
 Build: Dockerfile
 Dockerfile file: Dockerfile   ← if source path is empty, root Dockerfile builds API

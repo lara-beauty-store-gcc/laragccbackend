@@ -1,4 +1,4 @@
-# Deploy — استخدم branch `main` فقط
+# Deploy — branch `main` (أو `deploy-fix` — نفس الكود)
 
 كل الشغل (store + backend) موجود على **`main`** — مو على branches `cursor/*`.
 

@@ -30,8 +30,8 @@ EasyPanel → **New App** (ou éditer le service store):
 | Champ | Valeur |
 |--------|--------|
 | Repo | `lara-beauty-store-gcc/laragccbackend` |
-| Branch | `main` |
-| Build path | `frontend` |
+| Branch | `main` أو `deploy-fix` |
+| Source path | `frontend` |
 | Dockerfile | `frontend/Dockerfile` |
 | Port | `3000` |
 | Domain | `larabeauty.store` |

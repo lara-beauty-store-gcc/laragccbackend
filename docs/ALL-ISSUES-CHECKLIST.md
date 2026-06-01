@@ -1,21 +1,25 @@
 # كل المشاكل المحتملة + الحل (Lara Beauty)
 
-## 1. DNS (خارج الكود)
+## 1. DNS (أغلب “page not found” — خارج الكود)
 
 | المشكل | الحل |
 |--------|------|
-| `larabeauty.store` ما يفتح | A record → IP السيرفر |
-| `api.larabeauty.store` NXDOMAIN | A record `api` → نفس IP |
-| SSL | EasyPanel → Enable HTTPS |
+| `larabeauty.store` ما يفتح / Google page not found | **A** `@` → IP السيرفر EasyPanel |
+| `api.larabeauty.store` NXDOMAIN | **A** `api` → نفس IP |
+| `www` | **CNAME** → `larabeauty.store` |
+| SSL | EasyPanel → Domains → Enable HTTPS |
+
+Test: `ping larabeauty.store` → لازم يعطيك IP، ماشي “could not find host”.
 
 ## 2. EasyPanel config
 
 | المشكل | الحل |
 |--------|------|
-| Build 2 ثواني | Path غلط أو Dockerfile Alpine (صلح) |
-| Store = API | Store path = `frontend` port 3000 |
-| API port 3000 | API path = `backend` port **8000** |
-| Branch غلط | **`main`** فقط |
+| Build 2 ثواني | Branch `main` + path `frontend`/`backend` (ماشي repo root للـ store) |
+| “Wrong EasyPanel source path” | Pull `main` — root Dockerfile يبني API |
+| Store = API / JSON | Store path = **`frontend`** port **3000** |
+| API port 3000 | API path = **`backend`** port **8000** |
+| Branch قديم | **`main`** أو **`deploy-fix`** (نفس الكود بعد merge) |
 
 ## 3. Docker build
 
