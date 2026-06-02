@@ -24,7 +24,9 @@ EasyPanel → Server/VPS → **Public IPv4** (مثال: `123.45.67.89`)
 | **A** | `api` | **نفس IP** | DNS only |
 | **CNAME** | `www` | `larabeauty.store` | DNS only |
 
-**مهم:** أول مرة خلي Proxy **OFF** (grey cloud). من بعد ما EasyPanel SSL يخدم، تقدر تشغل البرتقالي.
+**مهم:** أول مرة خلي Proxy **OFF** (grey cloud). من بعد ما EasyPanel SSL (Let's Encrypt) يخدم، تقدر تشغل البرتقالي.
+
+**خطأ SSL فالمتصفح** (`NET::ERR_CERT_AUTHORITY_INVALID` / connexion pas privée): السيرفر كيعطي شهادة `CN=Easypanel` — خاصك تفعّل HTTPS/Let's Encrypt فـ EasyPanel → [`easypanel/SSL-FIX-ERR-CERT.md`](../easypanel/SSL-FIX-ERR-CERT.md)
 
 ### 3. EasyPanel — service **store** (ماشي backend)
 

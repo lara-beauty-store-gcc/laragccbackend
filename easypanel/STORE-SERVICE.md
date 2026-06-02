@@ -11,6 +11,8 @@ Dockerfile file: Dockerfile    ← NOT frontend/Dockerfile
 Domains proxy port: 3000
 ```
 
+**HTTPS (obligatoire):** Domains → Enable **Let's Encrypt** — sinon Chrome: `NET::ERR_CERT_AUTHORITY_INVALID` (شهادة `CN=Easypanel`). → [`SSL-FIX-ERR-CERT.md`](./SSL-FIX-ERR-CERT.md)
+
 Environment:
 ```
 NEXT_PUBLIC_SITE_URL=https://larabeauty.store
