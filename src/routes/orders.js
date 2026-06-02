@@ -12,7 +12,7 @@ const router = Router();
 
 const PRICES = {
   b1: 16,
-  b2: 23,
+  b2: 21,
   b3: 29,
   UPSELL: 9,
 };

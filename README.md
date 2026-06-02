@@ -15,9 +15,9 @@ Full spec includes: architecture, CRO, Kuwaiti copy, design system, FastAPI back
 | Folder | Stack | Domain |
 |--------|-------|--------|
 | `frontend/` | Next.js 14, React, Tailwind | larabeauty.store |
-| `backend/` | Python FastAPI, Alembic, PostgreSQL | api.larabeauty.store |
+| `backend/` | Node Express API, PostgreSQL | api.larabeauty.store |
 
-> Legacy Node CAPI at repo root may exist — new implementation follows `docs/07-backend-spec.md`.
+> Legacy `src/` at repo root is unused; active API is `backend/src/`.
 
 ## Database (EasyPanel)
 
@@ -31,25 +31,21 @@ postgres://larabeauty:***@larabeauty_database:5432/larabeauty?sslmode=disable
 2. علكات عشبة العنزة ضد الإرهاق والتعب
 3. علكات ضد التشتت وضعف التركيز
 
-Bundles: **16 / 23 / 29 KWD** · Checkout upsell: **9 KWD**
+Bundles: **16 / 21 / 29 KWD** · Checkout upsell: **9 KWD**
 
-## Deploy (EasyPanel) — سريع (فرعين منفصلين)
+## Deploy (EasyPanel) — canonical
 
-| Service | Git branch | Source path | Port |
-|---------|------------|-------------|------|
-| **Store** | **`lara-frontend`** | *(empty)* | 3000 |
-| **API** | **`lara-backend`** | *(empty)* | 8000 |
+**GitHub:** `lara-beauty-store-gcc/laragccbackend` · **Branch:** `main`  
+Do **not** use `laragccfrontend` (empty legacy repo).
 
-طور على **`main`** → push يحدّث الفرعين (CI). دليل: [`easypanel/BRANCHES-FAST-DEPLOY.md`](./easypanel/BRANCHES-FAST-DEPLOY.md)
+| Service | Source path | Dockerfile | Proxy port | Domain |
+|---------|-------------|------------|------------|--------|
+| **Store** | `frontend` | `Dockerfile` | **3000** | larabeauty.store |
+| **API** | `backend` | `Dockerfile` | **8000** | api.larabeauty.store |
 
-## Deploy (monorepo) — بديل
+Copy-paste: [`easypanel/PRODUCTION-DEPLOY.md`](./easypanel/PRODUCTION-DEPLOY.md) · Store: [`easypanel/STORE-SERVICE.md`](./easypanel/STORE-SERVICE.md) · API: [`easypanel/API-SERVICE.md`](./easypanel/API-SERVICE.md)
 
-**Branch:** `main`
-
-| Service | Source path | Port | Domain |
-|---------|-------------|------|--------|
-| Store | `frontend` | 3000 | larabeauty.store |
-| API | `backend` | 8000 | api.larabeauty.store |
+**Optional faster builds:** branches `lara-frontend` / `lara-backend` (empty source path, synced from `main` by CI). See [`easypanel/BRANCHES-FAST-DEPLOY.md`](./easypanel/BRANCHES-FAST-DEPLOY.md).
 
 **DNS (obligatoire):** Domain uses **Cloudflare** — add **A** `@` + **A** `api` → IP serveur (grey cloud). Without this, `larabeauty.store` = page not found forever. → [`docs/CLOUDFLARE-DNS-FIX.md`](./docs/CLOUDFLARE-DNS-FIX.md)
 

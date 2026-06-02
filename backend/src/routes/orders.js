@@ -12,10 +12,25 @@ const router = Router();
 
 const PRICES = {
   b1: 16,
-  b2: 23,
+  b2: 21,
   b3: 29,
   UPSELL: 9,
 };
+
+/** Frontend sends offer ids one|two|three; legacy clients may send b1|b2|b3 */
+const BUNDLE_ALIASES = {
+  one: 'b1',
+  two: 'b2',
+  three: 'b3',
+  b1: 'b1',
+  b2: 'b2',
+  b3: 'b3',
+};
+
+function normalizeBundleId(bundleId) {
+  const key = String(bundleId || 'b1').toLowerCase();
+  return BUNDLE_ALIASES[key] || key;
+}
 
 function clientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
@@ -26,7 +41,7 @@ function clientIp(req) {
 function calcTotal(items, upsell) {
   let total = 0;
   for (const item of items) {
-    const bundle = item.bundleId || 'b1';
+    const bundle = normalizeBundleId(item.bundleId);
     const unit = PRICES[bundle] ?? Number(item.unitPriceKwd) ?? 16;
     const qty = Number(item.quantity) || 1;
     total += unit * qty;
@@ -82,8 +97,8 @@ router.post('/', async (req, res) => {
     };
 
     const dbItems = items.map((i) => {
-      const bundle = i.bundleId || 'b1';
-      const unit = PRICES[bundle] ?? 16;
+      const bundle = normalizeBundleId(i.bundleId);
+      const unit = PRICES[bundle] ?? Number(i.unitPriceKwd) ?? 16;
       const qty = Number(i.quantity) || 1;
       return {
         productId: i.productId || i.id,
