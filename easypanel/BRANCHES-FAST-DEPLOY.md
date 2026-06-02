@@ -1,27 +1,14 @@
-# Deploy سريع — فرعين منفصلين
+# EasyPanel — deploy branches
 
-## الفكرة
+| Service | Git branch | Source path | Port |
+|---------|------------|-------------|------|
+| **Store** | **`frontend`** | *(empty)* | **3000** |
+| **API** | **`backend`** | *(empty)* | **8000** |
 
-| فرع Git | EasyPanel service | Source path | Port |
-|---------|-------------------|-------------|------|
-| **`frontend`** أو `lara-frontend` | Store | *(فارغ)* | 3000 |
-| **`backend`** أو `lara-backend` | API | *(فارغ)* | 8000 |
+Repo: **`lara-beauty-store-gcc/laragccbackend`**
 
-كل فرع فيه **التطبيق فقط** (مو monorepo كامل) → build أسرع.
+Each branch = full Next.js or Express app at **repository root** (not monorepo subfolders).
 
----
+Refresh: `./scripts/sync-deploy-branches.sh` then push, or push `main` (CI syncs automatically).
 
-## التطوير
-
-1. اشتغل على **`main`** (`frontend/` + `backend/`)
-2. Push `main` → CI يحدّث الفرعين
-3. EasyPanel Redeploy
-
-يدوياً: `./scripts/sync-deploy-branches.sh` ثم `git push -f origin lara-frontend lara-backend`
-
----
-
-## EasyPanel
-
-**Store:** branch **`frontend`** · path فارغ · port **3000**  
-**API:** branch **`backend`** · path فارغ · port **8000**
+See [`DEPLOY-BRANCHES.md`](./DEPLOY-BRANCHES.md).

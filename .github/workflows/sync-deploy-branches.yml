@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -12,12 +15,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Sync lara-frontend & lara-backend
+      - name: Build frontend & backend deploy branches
         run: |
           chmod +x scripts/sync-deploy-branches.sh
           ./scripts/sync-deploy-branches.sh
       - name: Push deploy branches
         run: |
-          git branch -f frontend lara-frontend
-          git branch -f backend lara-backend
-          git push -f origin lara-frontend lara-backend frontend backend
+          git push -f origin frontend backend lara-frontend lara-backend
