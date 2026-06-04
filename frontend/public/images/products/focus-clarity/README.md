@@ -1,12 +1,9 @@
-# focus-clarity — صور **صفحة المنتج** فقط
+# focus-clarity — product page images
 
-| ملف | القسم فالصفحة |
-|-----|----------------|
-| `hero.png` | فوق (قبل/بعد) |
-| `problem.png` | ليش يصير هالشي؟ |
-| `ingredients.png` | المكوّنات |
+| File | Section |
+|------|---------|
+| `hero.webp` | Top |
+| `problem.webp` | Problem section |
+| `ingredients.webp` | Ingredients |
 
-**Homepage** كيستعمل ملف منفصل:  
-`../focus-clarity.png` (ما تبدّلوش بـ hero.png)
-
-**GitHub:** `frontend/public/images/products/focus-clarity/`
+Homepage card uses `../focus-clarity.webp` (separate file).

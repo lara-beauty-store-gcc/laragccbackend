@@ -1,26 +1,41 @@
-# Deploy فـ 3 خطوات (EasyPanel)
+# Deploy — اتبع هاد الخطوات بالترتيب
 
-## Store — larabeauty.store
+## ① Git (مرة وحدة)
 
-1. EasyPanel → **Projects** → service **store** (ولا lara-store)
-2. تبويب **Source** (ولا Git):
-
-```
-Repository:  lara-beauty-store-gcc/laragccbackend
-Branch:      main
-Source path: frontend
-```
-
-3. تبويب **Build**:
+EasyPanel → service **store** → **Source**
 
 ```
-Type:        Dockerfile
-Dockerfile:  Dockerfile
+Repository: lara-beauty-store-gcc/laragccbackend
+Branch:     main
+Path:       frontend
 ```
 
-4. تبويب **Domains** → Port: **3000** → Domain: larabeauty.store
+**Save**
 
-5. **Environment** (لصق):
+---
+
+## ② Build
+
+```
+Build method: Dockerfile
+Dockerfile:   Dockerfile
+```
+
+**ماشي** Nixpacks فقط — خاص Dockerfile.
+
+---
+
+## ③ Port + Domain
+
+```
+Proxy port: 3000
+Domain:     larabeauty.store
+HTTPS:      Let's Encrypt ON
+```
+
+---
+
+## ④ Environment (copy)
 
 ```
 PORT=3000
@@ -30,45 +45,31 @@ NEXT_PUBLIC_SITE_URL=https://larabeauty.store
 NEXT_PUBLIC_API_URL=https://api.larabeauty.store
 ```
 
-6. اضغط **Deploy** (أو **Rebuild** ثم **Deploy**)
+---
 
-⏱ استنى **5–10 دقائق** — Build كيطول بسبب الصور.
+## ⑤ Deploy
+
+1. **Rebuild** (انتظر 3–8 دقائق)
+2. **Deploy** / **Start**
+
+Logs → Build → خاصك تشوف: `✓ Compiled successfully`
 
 ---
 
-## إلا الزر Deploy ما خدامش
+## إلا ما خدمش
 
-| جرّب |
-|------|
-| **Settings** → Git → Disconnect → Connect من جديد |
-| تأكد repo: `laragccbackend` ماشي `laragccfrontend` |
-| Service **Stopped**? → **Start** |
-| شوف **Logs** → Build — آخر سطر أحمر = السبب |
+| المشكل | الحل |
+|--------|------|
+| ما كاينش Deploy | Git reconnect |
+| Branch not found | `main` + repo `laragccbackend` |
+| Build fail OOM | زيد RAM VPS ولا Build timeout |
+| Build fail timeout | Settings → timeout 900s |
+| SSL error | Domains → Let's Encrypt |
 
----
-
-## إلا Build كيطيح (fail)
-
-انسخ آخر **10 أسطر** من Build log وصيفطهم.
-
-غالباً:
-- **timeout** → زيد Build timeout فـ Settings
-- **no space** → السيرفر ممتلئ
-- **npm error** → قولنا السطر
+**صوّر Build log** (آخر 15 سطر) وصيفط.
 
 ---
 
-## API (اختياري دابا)
+## Test
 
-```
-Branch: main
-Source path: backend
-Port: 8000
-```
-
----
-
-## Test منين ينجح
-
-https://larabeauty.store/api/health  
-https://larabeauty.store/products/focus-clarity
+https://larabeauty.store/api/health

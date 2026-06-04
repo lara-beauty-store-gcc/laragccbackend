@@ -1,42 +1,30 @@
-/** Product shots in public/images/products/ — use simple filenames (no spaces) for reliable deploy */
+/** Product images in public/images/products/ — WebP for fast EasyPanel deploy */
 const BASE = '/images/products';
 
 export const PRODUCT_COLLECTION_IMAGES = {
-  'magnesium-sleep': `${BASE}/magnesium-sleep.png`,
-  'epimedium-energy': `${BASE}/epimedium-energy.png`,
-  'focus-clarity': `${BASE}/focus-clarity.png`,
+  'magnesium-sleep': `${BASE}/magnesium-sleep.webp`,
+  'epimedium-energy': `${BASE}/epimedium-energy.webp`,
+  'focus-clarity': `${BASE}/focus-clarity.webp`,
 } as const;
 
-export const homeHeroImagePath = `${BASE}/home-hero.png`;
+export const homeHeroImagePath = `${BASE}/home-hero.webp`;
 
 export function collectionImageFor(slug: keyof typeof PRODUCT_COLLECTION_IMAGES) {
   return PRODUCT_COLLECTION_IMAGES[slug];
 }
 
-/** Product page images: upload to public/images/products/{slug}/ on GitHub */
-const PAGE = `${BASE}`;
-
 export type ProductPageSlug = keyof typeof PRODUCT_COLLECTION_IMAGES;
 
-/** Hero only — other slots stay placeholder until you upload more files */
-export function productPageHero(slug: ProductPageSlug) {
-  const hero = `${PAGE}/${slug}/hero.png`;
-  return {
-    heroBeforeAfter: hero,
-    heroProduct: hero,
-  };
-}
-
-/** All page sections — use only when every file exists in the folder */
 export function productPageImagesFull(slug: ProductPageSlug) {
-  const dir = `${PAGE}/${slug}`;
+  const dir = `${BASE}/${slug}`;
   return {
-    ...productPageHero(slug),
-    problemImage: `${dir}/problem.png`,
-    ingredientImage: `${dir}/ingredients.png`,
-    authorityImage: `${dir}/authority.png`,
-    lifestyleImage: `${dir}/lifestyle.png`,
-    testimonialImage: `${dir}/testimonial.png`,
-    comparisonImage: `${dir}/comparison.png`,
+    heroBeforeAfter: `${dir}/hero.webp`,
+    heroProduct: `${dir}/hero.webp`,
+    problemImage: `${dir}/problem.webp`,
+    ingredientImage: `${dir}/ingredients.webp`,
+    authorityImage: '',
+    lifestyleImage: '',
+    testimonialImage: '',
+    comparisonImage: '',
   };
 }
