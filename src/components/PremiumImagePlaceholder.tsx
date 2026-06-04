@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { businessInputs } from '@/config/business';
 import type { ProductConfig } from '@/config/products';
 
 const hues: Record<ProductConfig['placeholderHue'], string> = {
@@ -54,14 +55,17 @@ export function PremiumImagePlaceholder({
 }
 
 export function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
-  const dim = size === 'sm' ? 36 : 44;
+  const h = size === 'sm' ? 36 : 44;
+  const { brand } = businessInputs;
   return (
     <Image
-      src="/images/logo.svg"
-      alt="لارا للجمال"
-      width={dim}
-      height={dim}
-      className="shrink-0 object-contain"
+      src={brand.logoIconUrl}
+      alt={brand.nameLocal}
+      width={85}
+      height={128}
+      className="w-auto shrink-0 object-contain"
+      style={{ height: h }}
+      unoptimized
     />
   );
 }

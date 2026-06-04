@@ -20,12 +20,13 @@ export function SiteHeader() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label={brand.nameLocal}>
             <Image
-              src="/images/logo.svg"
+              src={brand.logoIconUrl}
               alt={brand.nameLocal}
-              width={44}
-              height={44}
-              className="h-11 w-11 object-contain drop-shadow-sm transition-transform group-hover:scale-105"
+              width={85}
+              height={128}
+              className="h-11 w-auto max-w-[3.25rem] object-contain drop-shadow-sm transition-transform group-hover:scale-105"
               priority
+              unoptimized
             />
             <div className="leading-tight">
               <p className="text-sm font-extrabold tracking-tight text-foreground sm:text-base">
