@@ -1,14 +1,28 @@
-# Product images (homepage)
+# Product images
 
-Use these **simple filenames** (required for production — no spaces in names):
+## Homepage (collection cards)
 
-| File | Usage |
-|------|--------|
-| `magnesium-sleep.png` | Card — روتين النوم |
-| `epimedium-energy.png` | Card — روتين الطاقة |
-| `focus-clarity.png` | Card — روتين التركيز |
-| `home-hero.png` | Homepage hero (3 bottles) |
+| File | Product |
+|------|---------|
+| `magnesium-sleep.png` | روتين النوم |
+| `epimedium-energy.png` | روتين الطاقة |
+| `focus-clarity.png` | روتين التركيز |
+| `home-hero.png` | Hero homepage |
 
-`ChatGPT Image *.png` files are kept as backups; the site loads the names above.
+## Product pages (صفحة كل منتج)
 
-To replace a photo: overwrite the matching file, keep the same name, redeploy store.
+مجلد لكل منتج على GitHub:
+
+```
+frontend/public/images/products/
+├── focus-clarity/     → larabeauty.store/products/focus-clarity
+│   ├── hero.png       ← الصورة فوق (الأهم)
+│   ├── problem.png
+│   └── ingredients.png
+├── magnesium-sleep/
+└── epimedium-energy/
+```
+
+**GitHub:** Add file داخل المجلد → Commit `main` → Redeploy.
+
+See `focus-clarity/README.md` for full guide.

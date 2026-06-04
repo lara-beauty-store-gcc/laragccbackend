@@ -23,7 +23,11 @@ export function ProductMedia({
   className?: string;
   variant?: 'hero' | 'card' | 'square';
 }) {
-  const src = product.images[imageKey];
+  const src =
+    product.images[imageKey] ||
+    (imageKey === 'heroBeforeAfter' && product.collectionImage) ||
+    (imageKey === 'heroProduct' && product.collectionImage) ||
+    '';
   const hue = product.placeholderHue;
 
   if (src) {
