@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   ArrowLeft,
   CircleCheckBig,
@@ -15,8 +14,8 @@ import type { ProductConfig } from '@/config/products';
 import type { ProductOffer } from '@/config/types';
 import { businessConfig } from '@/config/business';
 import { formatPrice, formatPriceFrom } from '@/lib/pricing';
+import { ProductImageCarousel } from './ProductImageCarousel';
 import { ProductOfferSelector } from './ProductOfferSelector';
-import { ProductMedia } from './ProductMedia';
 import { Stars } from '../Stars';
 
 const { cod } = businessConfig;
@@ -35,8 +34,6 @@ const miniTrust = [
   { icon: CircleCheckBig, title: 'حلال · GMP', sub: 'تركيبة واضحة' },
 ];
 
-type GalleryKey = 'heroBeforeAfter' | 'heroProduct' | 'problemImage' | 'ingredientImage';
-
 export function ProductHero({
   product,
   selectedOffer,
@@ -52,12 +49,6 @@ export function ProductHero({
   ctaLabelText: string;
   ctaRef: React.Ref<HTMLDivElement>;
 }) {
-  const galleryKeys: GalleryKey[] = ['heroBeforeAfter', 'heroProduct', 'problemImage', 'ingredientImage'].filter(
-    (k) => product.images[k as keyof typeof product.images],
-  ) as GalleryKey[];
-  const keys = galleryKeys.length ? galleryKeys : (['heroBeforeAfter'] as GalleryKey[]);
-  const [activeKey, setActiveKey] = useState<GalleryKey>(keys[0]);
-
   return (
     <section
       id="add-to-cart-section"
@@ -67,32 +58,7 @@ export function ProductHero({
         <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="relative order-1 flex justify-center lg:order-1">
             <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
-            <div className="relative w-full max-w-lg">
-              <div className="relative aspect-square overflow-hidden rounded-3xl border-8 border-white bg-surface-rose shadow-2xl [&>div]:absolute [&>div]:inset-0">
-                <ProductMedia
-                  product={product}
-                  imageKey={activeKey}
-                  alt={product.imageAlts[activeKey] ?? product.name}
-                  variant="square"
-                  className="absolute inset-0 h-full min-h-0 rounded-none border-0"
-                />
-              </div>
-              {keys.length > 1 ? (
-                <div className="mt-4 flex justify-center gap-2">
-                  {keys.map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setActiveKey(key)}
-                      className={`h-2 w-2 rounded-full transition ${
-                        activeKey === key ? 'w-6 bg-primary' : 'bg-border'
-                      }`}
-                      aria-label={`صورة ${key}`}
-                    />
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <ProductImageCarousel product={product} />
           </div>
 
           <div className="order-2 space-y-5 lg:order-2">

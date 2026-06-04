@@ -68,14 +68,14 @@ export function ProductMedia({
       <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_70%_30%,white,transparent_55%)]" />
       {variant === 'hero' ? (
         <div className="relative flex h-full flex-col">
-          <div className="grid flex-1 grid-cols-2 gap-1 p-3">
-            <div className="rounded-xl bg-white/50 p-2 text-center">
+          <div className="grid flex-1 grid-cols-2 gap-0 overflow-hidden">
+            <div className="bg-white/50 p-2 text-center">
               <p className="text-[10px] font-medium text-primary/70">قبل</p>
-              <div className="mt-2 h-20 rounded-lg bg-gradient-to-br from-stone-200 to-stone-300" />
+              <div className="mt-2 h-20 bg-gradient-to-br from-stone-200 to-stone-300" />
             </div>
-            <div className="rounded-xl bg-white/60 p-2 text-center">
+            <div className="border-r border-white/40 bg-white/60 p-2 text-center">
               <p className="text-[10px] font-medium text-primary/70">بعد الروتين</p>
-              <div className="mt-2 h-20 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-200" />
+              <div className="mt-2 h-20 bg-gradient-to-br from-emerald-100 to-teal-200" />
             </div>
           </div>
           <div className="relative z-10 -mt-8 mx-auto mb-4 flex h-28 w-20 flex-col items-center justify-center rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-white to-white/80 shadow-card">
