@@ -1,5 +1,6 @@
 'use client';
 
+import { CircleCheckBig } from 'lucide-react';
 import type { ProductConfig } from '@/config/products';
 import type { ProductOffer } from '@/config/types';
 import { formatPrice, formatSavings } from '@/lib/pricing';
@@ -15,10 +16,10 @@ export function ProductOfferSelector({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="font-arabic text-sm font-bold text-primary">اختاري العرض:</p>
-        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-          نتيجة من أول علبة
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-arabic text-sm font-extrabold text-foreground">اختاري العرض:</p>
+        <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary">
+          نتيجة من العلبة الأولى
         </span>
       </div>
       {product.offers.map((offer) => {
@@ -29,37 +30,35 @@ export function ProductOfferSelector({
             key={offer.id}
             type="button"
             onClick={() => onSelect(offer)}
-            className={`relative w-full rounded-2xl border-2 p-4 text-right transition ${
+            className={`relative flex w-full items-center justify-between gap-3 rounded-2xl border-2 p-4 text-right transition-all duration-200 ${
               selected
                 ? 'border-primary bg-primary/5 shadow-soft'
-                : 'border-border bg-card'
+                : 'border-border bg-white hover:border-primary/30'
             }`}
           >
             {offer.badge ? (
-              <span className="absolute left-3 top-3 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold text-primary">
+              <span className="absolute left-3 top-3 rounded-full bg-secondary px-2.5 py-0.5 text-[9px] font-bold text-primary-dark">
                 {offer.badge}
               </span>
             ) : null}
-            <div className="flex items-start gap-3">
+            <div className="flex flex-1 items-start gap-3">
               <span
                 className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                  selected ? 'border-primary bg-primary' : 'border-border'
+                  selected ? 'border-primary bg-primary text-white' : 'border-border bg-white'
                 }`}
               >
-                {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+                {selected ? <CircleCheckBig className="h-3 w-3" aria-hidden /> : null}
               </span>
               <div className="flex-1">
-                <p className="font-arabic text-sm font-bold text-primary">{offer.label}</p>
+                <p className="font-arabic text-sm font-extrabold text-foreground">{offer.label}</p>
                 <p className="mt-0.5 text-xs text-muted">{offer.subtitle}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="font-arabic text-base font-bold text-primary">
-                    {formatPrice(offer.price)}
-                  </span>
-                  {savings ? (
-                    <span className="text-xs font-semibold text-emerald-700">{savings}</span>
-                  ) : null}
-                </div>
               </div>
+            </div>
+            <div className="shrink-0 text-left">
+              <p className="font-arabic text-base font-extrabold text-primary">{formatPrice(offer.price)}</p>
+              {savings ? (
+                <p className="mt-0.5 text-[11px] font-bold text-emerald-700">{savings}</p>
+              ) : null}
             </div>
           </button>
         );
