@@ -27,23 +27,29 @@ export function ProductMedia({
   const src = product.images[imageKey] || '';
   const hue = product.placeholderHue;
 
+  const minH =
+    variant === 'hero'
+      ? 'min-h-[320px] aspect-[4/5] max-h-[480px]'
+      : variant === 'square'
+        ? 'min-h-[200px] aspect-square'
+        : 'min-h-[220px] aspect-[4/3]';
+
   if (src) {
     return (
-      <div className={`relative overflow-hidden rounded-2xl ${className}`}>
+      <div
+        className={`relative w-full overflow-hidden rounded-2xl border border-border bg-white ${minH} ${className}`}
+      >
         <Image
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className="object-contain p-1"
           sizes="(max-width: 480px) 100vw"
           unoptimized
         />
       </div>
     );
   }
-
-  const minH =
-    variant === 'hero' ? 'min-h-[320px]' : variant === 'square' ? 'min-h-[200px]' : 'min-h-[220px]';
 
   return (
     <div
