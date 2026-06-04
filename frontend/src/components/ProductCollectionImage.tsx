@@ -15,13 +15,13 @@ export function ProductCollectionImage({
   if (product.collectionImage) {
     return (
       <div
-        className={`relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-white ${className}`}
+        className={`relative aspect-square w-full overflow-hidden rounded-2xl ${className}`}
       >
         <Image
           src={product.collectionImage}
           alt={product.collectionImageAlt ?? product.name}
           fill
-          className="object-contain p-3"
+          className="object-cover object-center"
           sizes="(max-width: 480px) 100vw, 420px"
           priority={priority}
           unoptimized

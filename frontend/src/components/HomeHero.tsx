@@ -9,18 +9,16 @@ export function HomeHero() {
 
   return (
     <section className="px-4 pb-8 pt-6">
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-white">
-        <div className="relative aspect-[4/3] w-full min-h-[260px]">
-          <Image
-            src={homeHeroImagePath}
-            alt="لارا للجمال — روتين النوم والطاقة والتركيز"
-            fill
-            className="object-contain p-2"
-            sizes="(max-width: 480px) 100vw, 480px"
-            priority
-            unoptimized
-          />
-        </div>
+      <div className="relative h-[min(85vw,380px)] min-h-[260px] w-full overflow-hidden rounded-2xl">
+        <Image
+          src={homeHeroImagePath}
+          alt="لارا للجمال — روتين النوم والطاقة والتركيز"
+          fill
+          className="object-cover object-center"
+          sizes="(max-width: 480px) 100vw, 480px"
+          priority
+          unoptimized
+        />
         <div className="absolute bottom-4 right-4 rounded-xl border border-border bg-card/95 px-3 py-2 shadow-soft">
           <p className="text-xs font-bold text-primary">{copy.proofTitle}</p>
           <p className="text-[10px] text-muted">{copy.proofSubtitle}</p>
