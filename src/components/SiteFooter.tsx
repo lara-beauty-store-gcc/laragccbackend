@@ -21,9 +21,9 @@ export function SiteFooter() {
               <Image
                 src={brand.logoUrl}
                 alt={brand.nameLocal}
-                width={214}
-                height={320}
-                className="h-16 w-auto max-w-[5.5rem] object-contain"
+                width={512}
+                height={512}
+                className="h-14 w-14 object-contain sm:h-16 sm:w-16"
                 unoptimized
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>

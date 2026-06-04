@@ -55,16 +55,16 @@ export function PremiumImagePlaceholder({
 }
 
 export function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
-  const h = size === 'sm' ? 36 : 44;
+  const dim = size === 'sm' ? 36 : 44;
   const { brand } = businessInputs;
   return (
     <Image
       src={brand.logoIconUrl}
       alt={brand.nameLocal}
-      width={85}
+      width={128}
       height={128}
-      className="w-auto shrink-0 object-contain"
-      style={{ height: h }}
+      className="shrink-0 object-contain"
+      style={{ width: dim, height: dim }}
       unoptimized
     />
   );
