@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   BadgeCheck,
@@ -116,26 +117,13 @@ export function MechanismSection({ product }: { product: ProductConfig }) {
     <ProductPageSection variant="white">
       <ProductSectionHeader
         eyebrow="ليش يصير هالشي؟"
-        title="السرّ في التركيز، مو في القائمة"
+        title="كيف يشتغل الروتين؟"
         subtitle={product.mechanism}
       />
-      <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-6">
-          <ProductMedia
-            product={product}
-            imageKey="heroProduct"
-            alt={product.imageAlts.heroProduct}
-            variant="square"
-            className="min-h-[320px] rounded-3xl border-8 border-white shadow-xl"
-          />
-        </div>
-        <div className="lg:col-span-6">
-          <div className="rounded-3xl border border-border bg-surface-rose p-6 sm:p-8">
-            <p className="text-sm font-extrabold text-secondary">{product.mainIngredient}</p>
-            <p className="mt-4 text-base leading-relaxed text-muted">{product.desiredOutcome}</p>
-            <p className="mt-4 text-sm leading-relaxed text-foreground">{product.mechanism}</p>
-          </div>
-        </div>
+      <div className="mx-auto max-w-3xl rounded-3xl border border-border bg-surface-rose p-6 sm:p-10">
+        <p className="text-sm font-extrabold text-secondary">{product.mainIngredient}</p>
+        <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">{product.desiredOutcome}</p>
+        <p className="mt-4 text-sm leading-relaxed text-foreground sm:text-base">{product.mechanism}</p>
       </div>
     </ProductPageSection>
   );
@@ -623,14 +611,17 @@ export function RelatedProducts({
             onClick={() => onSelect?.(p.slug)}
             className="group flex gap-5 rounded-3xl border border-border bg-white p-4 shadow-xl transition hover:-translate-y-1 hover:border-primary/50 sm:p-5"
           >
-            <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-2xl">
-              <ProductMedia
-                product={p}
-                imageKey="heroProduct"
-                alt={p.imageAlts.heroProduct}
-                variant="square"
-                className="h-full min-h-0"
-              />
+            <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-2xl bg-surface-rose">
+              {p.collectionImage ? (
+                <Image
+                  src={p.collectionImage}
+                  alt={p.collectionImageAlt ?? p.shortName}
+                  fill
+                  className="object-cover object-center"
+                  sizes="96px"
+                  unoptimized
+                />
+              ) : null}
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center">
               <p className="font-arabic text-base font-extrabold leading-snug text-foreground group-hover:text-primary">
