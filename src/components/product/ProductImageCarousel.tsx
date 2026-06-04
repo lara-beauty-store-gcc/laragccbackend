@@ -1,7 +1,7 @@
 import type { ProductConfig } from '@/config/products';
 import { MediaFrame } from '@/components/ui/MediaFrame';
 
-/** Single before/after hero — fits inside parent card on mobile. */
+/** Product hero image — fits inside parent card on mobile. */
 export function ProductImageCarousel({ product }: { product: ProductConfig }) {
   const src = product.images.heroBeforeAfter;
   const alt = product.imageAlts.heroBeforeAfter ?? product.name;

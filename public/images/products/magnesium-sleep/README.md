@@ -2,7 +2,8 @@
 
 | File | Section |
 |------|---------|
-| `hero.webp` | Top (before/after) |
+| `product-hero.webp` | Top hero on PDP (from brand asset) |
+| `hero.webp` | Legacy — not used on PDP |
 | `problem.webp` | ليش يصير هالشي؟ |
 | `ingredients.webp` | المكوّنات |
 
