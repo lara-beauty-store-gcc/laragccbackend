@@ -14,6 +14,8 @@ lara-beauty-store-gcc/laragccbackend
 
 EasyPanel → service **store** → **Source / Git**
 
+### الطريقة A (مفضّلة)
+
 | الحقل | القيمة |
 |--------|--------|
 | Repository | `lara-beauty-store-gcc/laragccbackend` |
@@ -22,6 +24,14 @@ EasyPanel → service **store** → **Source / Git**
 | Dockerfile | `Dockerfile` |
 | Proxy port | **3000** |
 | Domain | `larabeauty.store` |
+
+### الطريقة B — إلا A ما خدمتش
+
+| Branch | **`main`** |
+| Source path | **`frontend`** |
+| الباقي | نفسه (port 3000, Dockerfile) |
+
+→ [`DEPLOY-PLAN-B.md`](./DEPLOY-PLAN-B.md)
 
 **Environment** (نسخ ولصق):
 

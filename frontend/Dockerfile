@@ -11,8 +11,9 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS=--max-old-space-size=2048
-RUN echo ">>> [store] npm run build" && npm run build && ls -la .next 2>/dev/null || (echo "[FATAL] .next missing after build" && exit 1)
+ENV NODE_OPTIONS=--max-old-space-size=3072
+RUN echo ">>> [store] public/images:" && ls -la public/images/products 2>/dev/null || true
+RUN echo ">>> [store] npm run build" && npm run build && test -d .next || (echo "[FATAL] .next missing after build" && exit 1)
 
 FROM base AS runner
 ENV NODE_ENV=production
