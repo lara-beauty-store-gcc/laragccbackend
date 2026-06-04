@@ -96,6 +96,8 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
+    collectionImage: '/images/products/magnesium-sleep.png',
+    collectionImageAlt: 'روتين النوم — علكات مغنيسيوم و L-ثيانين، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد روتين النوم',
@@ -190,6 +192,8 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
+    collectionImage: '/images/products/epimedium-energy.png',
+    collectionImageAlt: 'روتين الطاقة — علكات عشبة العنزة وفيتامين B12، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد الطاقة',
@@ -284,6 +288,8 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
+    collectionImage: '/images/products/focus-clarity.png',
+    collectionImageAlt: 'روتين التركيز — علكات أوميغا 3 وفيتامينات B، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد التركيز',

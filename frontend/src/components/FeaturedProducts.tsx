@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { products, getLowestOfferPrice } from '@/config/products';
 import { formatPriceFrom } from '@/lib/pricing';
-import { PremiumImagePlaceholder } from './PremiumImagePlaceholder';
+import { ProductCollectionImage } from './ProductCollectionImage';
 import { Stars } from './Stars';
 
 export function FeaturedProducts() {
@@ -18,7 +18,7 @@ export function FeaturedProducts() {
       </p>
 
       <div className="mt-8 space-y-8">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <article
             key={product.id}
             className="overflow-hidden rounded-2xl border border-border bg-card shadow-card"
@@ -28,7 +28,11 @@ export function FeaturedProducts() {
                 <span className="absolute left-4 top-4 z-10 rounded-full bg-card/90 px-3 py-1 text-[10px] font-medium text-primary shadow-sm">
                   {product.routineNameLocal}
                 </span>
-                <PremiumImagePlaceholder product={product} className="min-h-[240px]" />
+                <ProductCollectionImage
+                  product={product}
+                  className="min-h-[240px]"
+                  priority={index === 0}
+                />
               </div>
               <div className="p-5 text-center">
                 <h3 className="font-arabic text-lg font-bold leading-snug text-primary">

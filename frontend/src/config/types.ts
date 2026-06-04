@@ -91,6 +91,9 @@ export type ProductConfig = {
   offers: ProductOffer[];
   upsell: ProductUpsell;
   images: ProductImages;
+  /** Homepage / collection card only — product page hero stays empty until set */
+  collectionImage?: string;
+  collectionImageAlt?: string;
   imageAlts: Record<keyof ProductImages, string>;
   placeholderHue: 'teal' | 'amber' | 'indigo';
   exclusions?: string[];
