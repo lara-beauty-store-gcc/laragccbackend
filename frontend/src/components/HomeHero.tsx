@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Award, FlaskConical, ShieldCheck } from 'lucide-react';
+import { MediaFrame } from '@/components/ui/MediaFrame';
 import { homeHeroImagePath } from '@/config/product-images';
 import { getHeroCopy, getTrustBadges } from '@/lib/marketing';
 
@@ -64,17 +64,12 @@ export function HomeHero() {
 
         <div className="relative order-1 mb-8 flex justify-center lg:order-2 lg:mb-0">
           <div className="absolute inset-0 scale-125 rounded-full bg-primary/15 blur-3xl" aria-hidden />
-          <div className="relative aspect-square w-full max-w-lg overflow-hidden rounded-[3rem] border-8 border-white bg-surface-rose shadow-xl">
-            <Image
-              src={homeHeroImagePath}
-              alt="لارا للجمال — روتين النوم والطاقة والتركيز"
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 512px"
-              priority
-              unoptimized
-            />
-          </div>
+          <MediaFrame
+            src={homeHeroImagePath}
+            alt="لارا للجمال — روتين النوم والطاقة والتركيز"
+            layout="homeHero"
+            priority
+          />
           <div className="absolute -bottom-4 -left-4 flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-xl sm:-bottom-6 sm:-left-6">
             <div className="rounded-full bg-primary p-3 text-secondary ring-2 ring-secondary/30">
               <ShieldCheck className="h-6 w-6" aria-hidden />

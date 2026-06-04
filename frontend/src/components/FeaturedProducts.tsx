@@ -28,11 +28,7 @@ export function FeaturedProducts() {
                   <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white/90 px-3 py-1 text-[10px] font-bold text-primary shadow-sm backdrop-blur-sm">
                     {product.routineNameLocal} · {product.routineNameEnglish}
                   </span>
-                  <ProductCollectionImage
-                    product={product}
-                    className="aspect-square min-h-0 rounded-2xl"
-                    priority={index === 0}
-                  />
+                <ProductCollectionImage product={product} priority={index === 0} />
                 </div>
                 <div className="flex flex-1 flex-col p-5 sm:p-6">
                   <h3 className="font-arabic text-lg font-extrabold leading-snug text-foreground sm:text-xl">

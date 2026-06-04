@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { MediaFrame } from '@/components/ui/MediaFrame';
 import {
   BadgeCheck,
   ChevronDown,
@@ -62,13 +62,13 @@ export function ProblemInsightSection({ product }: { product: ProductConfig }) {
       />
       <div className="grid items-stretch gap-10 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-5">
-          <div className="mx-auto w-full max-w-md overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl">
+          <div className="mx-auto w-full max-w-md">
             <ProductMedia
               product={product}
               imageKey="problemImage"
               alt={product.imageAlts.problemImage}
-              variant="square"
-              className="min-h-[360px] rounded-none lg:min-h-[420px]"
+              variant="section"
+              frameClassName="overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl"
             />
           </div>
         </div>
@@ -190,13 +190,15 @@ export function IngredientBreakdown({ product }: { product: ProductConfig }) {
           );
         })}
       </div>
-      <ProductMedia
-        product={product}
-        imageKey="ingredientImage"
-        alt={product.imageAlts.ingredientImage}
-        className="mt-8 min-h-[280px] rounded-3xl border-8 border-white shadow-xl"
-        variant="square"
-      />
+      <div className="mx-auto mt-8 w-full max-w-md">
+        <ProductMedia
+          product={product}
+          imageKey="ingredientImage"
+          alt={product.imageAlts.ingredientImage}
+          variant="section"
+          frameClassName="overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl"
+        />
+      </div>
     </ProductPageSection>
   );
 }
@@ -611,18 +613,15 @@ export function RelatedProducts({
             onClick={() => onSelect?.(p.slug)}
             className="group flex gap-5 rounded-3xl border border-border bg-white p-4 shadow-xl transition hover:-translate-y-1 hover:border-primary/50 sm:p-5"
           >
-            <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-2xl bg-surface-rose">
-              {p.collectionImage ? (
-                <Image
-                  src={p.collectionImage}
-                  alt={p.collectionImageAlt ?? p.shortName}
-                  fill
-                  className="object-cover object-center"
-                  sizes="96px"
-                  unoptimized
-                />
-              ) : null}
-            </div>
+            {p.collectionImage ? (
+              <MediaFrame
+                src={p.collectionImage}
+                alt={p.collectionImageAlt ?? p.shortName}
+                layout="thumb"
+              />
+            ) : (
+              <div className="aspect-square w-28 shrink-0 rounded-2xl bg-surface-rose" />
+            )}
             <div className="flex min-w-0 flex-1 flex-col justify-center">
               <p className="font-arabic text-base font-extrabold leading-snug text-foreground group-hover:text-primary">
                 {p.cardHeadline}

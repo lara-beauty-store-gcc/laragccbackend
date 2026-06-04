@@ -1,6 +1,7 @@
-import Image from 'next/image';
 import type { ProductConfig } from '@/config/products';
 import type { ProductImages } from '@/config/types';
+import { MediaFrame } from '@/components/ui/MediaFrame';
+import type { ImageLayoutKey } from '@/config/image-layout';
 
 const hues: Record<ProductConfig['placeholderHue'], string> = {
   teal: 'from-teal-100 via-emerald-50 to-teal-200',
@@ -10,88 +11,62 @@ const hues: Record<ProductConfig['placeholderHue'], string> = {
 
 type MediaKey = keyof ProductImages;
 
+const layoutByVariant: Record<'hero' | 'card' | 'square' | 'section', ImageLayoutKey> = {
+  hero: 'productHero',
+  square: 'sectionPortrait',
+  section: 'sectionPortrait',
+  card: 'sectionPortrait',
+};
+
 export function ProductMedia({
   product,
   imageKey,
   alt,
   className = '',
-  variant = 'card',
+  frameClassName = '',
+  variant = 'section',
 }: {
   product: ProductConfig;
   imageKey: MediaKey;
   alt: string;
   className?: string;
-  variant?: 'hero' | 'card' | 'square';
+  frameClassName?: string;
+  variant?: 'hero' | 'card' | 'square' | 'section';
 }) {
-  // Product page only — never fall back to homepage collectionImage
   const src = product.images[imageKey] || '';
+  const layout = layoutByVariant[variant];
   const hue = product.placeholderHue;
-
-  const frameClass =
-    variant === 'hero'
-      ? 'h-[min(92vw,440px)] min-h-[300px] w-full'
-      : variant === 'square'
-        ? 'aspect-square w-full min-h-[200px]'
-        : 'aspect-[4/3] w-full min-h-[260px]';
 
   if (src) {
     return (
-      <div
-        className={`relative overflow-hidden rounded-2xl ${frameClass} ${className}`}
-      >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-cover object-center"
-          sizes="(max-width: 480px) 100vw"
-          priority={variant === 'hero'}
-          unoptimized
-        />
-      </div>
+      <MediaFrame
+        src={src}
+        alt={alt}
+        layout={layout}
+        priority={variant === 'hero'}
+        className={className}
+        frameClassName={frameClassName}
+      />
     );
   }
 
-  const minH =
-    variant === 'hero'
-      ? 'min-h-[320px]'
-      : variant === 'square'
-        ? 'min-h-[200px]'
-        : 'min-h-[220px]';
+  const aspectClass =
+    layout === 'productHero' ? 'aspect-square' : layout === 'sectionPortrait' ? 'aspect-[4/5]' : 'aspect-square';
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${hues[hue]} ${minH} ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${hues[hue]} ${aspectClass} min-h-[240px] w-full ${className}`}
       role="img"
       aria-label={alt}
     >
       <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_70%_30%,white,transparent_55%)]" />
-      {variant === 'hero' ? (
-        <div className="relative flex h-full flex-col">
-          <div className="grid flex-1 grid-cols-2 gap-0 overflow-hidden">
-            <div className="bg-white/50 p-2 text-center">
-              <p className="text-[10px] font-medium text-primary/70">قبل</p>
-              <div className="mt-2 h-20 bg-gradient-to-br from-stone-200 to-stone-300" />
-            </div>
-            <div className="border-r border-white/40 bg-white/60 p-2 text-center">
-              <p className="text-[10px] font-medium text-primary/70">بعد الروتين</p>
-              <div className="mt-2 h-20 bg-gradient-to-br from-emerald-100 to-teal-200" />
-            </div>
-          </div>
-          <div className="relative z-10 -mt-8 mx-auto mb-4 flex h-28 w-20 flex-col items-center justify-center rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-white to-white/80 shadow-card">
-            <span className="text-[9px] font-bold text-primary">{product.shortName}</span>
-            <span className="mt-1 text-[8px] text-muted">60 علكة</span>
-          </div>
-        </div>
-      ) : (
-        <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
-          <div
-            className={`mb-3 h-32 w-20 rounded-2xl border-2 border-white/70 bg-gradient-to-b ${hues[hue]} shadow-card`}
-          />
-          <p className="text-sm font-semibold text-primary">{product.shortName}</p>
-          <p className="mt-1 text-xs text-muted">صورة قريباً</p>
-        </div>
-      )}
+      <div className="relative flex h-full min-h-[240px] flex-col items-center justify-center p-6 text-center">
+        <div
+          className={`mb-3 h-32 w-20 rounded-2xl border-2 border-white/70 bg-gradient-to-b ${hues[hue]} shadow-card`}
+        />
+        <p className="text-sm font-semibold text-primary">{product.shortName}</p>
+        <p className="mt-1 text-xs text-muted">صورة قريباً</p>
+      </div>
     </div>
   );
 }

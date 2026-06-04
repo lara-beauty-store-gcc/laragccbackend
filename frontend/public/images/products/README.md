@@ -1,30 +1,29 @@
-# Product images
+# Product images — sizes (موحّدة)
 
-## Homepage (collection cards + hero)
+كل الصور **WebP**. التزمي بالمقاسات باش ما يتقصّو بزاف فالموقع.
 
-| File | Product |
-|------|---------|
-| `magnesium-sleep.png` | بطاقة روتين النوم |
-| `epimedium-energy.png` | بطاقة روتين الطاقة |
-| `focus-clarity.png` | بطاقة روتين التركيز |
-| `home-hero.png` | صورة كبيرة فوق homepage |
+| الملف | المقاس | أين تبان |
+|--------|--------|----------|
+| `{slug}/hero.webp` | **1200×1200** (1:1) | أعلى صفحة المنتج — before/after |
+| `{slug}/problem.webp` | **960×1200** (4:5) | قسم المشكلة |
+| `{slug}/ingredients.webp` | **960×1200** (4:5) | قسم المكوّنات |
+| `{slug}.webp` | **1000×1000** (1:1) | بطاقة Homepage |
+| `home-hero.webp` | **1200×800** (3:2) | Hero الرئيسية |
 
-**منفصل** عن مجلدات `focus-clarity/` (صفحة المنتج).
-
-## Product pages (صفحة كل منتج)
-
-مجلد لكل منتج على GitHub:
+## مجلدات
 
 ```
-frontend/public/images/products/
-├── focus-clarity/     → larabeauty.store/products/focus-clarity
-│   ├── hero.png       ← الصورة فوق (الأهم)
-│   ├── problem.png
-│   └── ingredients.png
+products/
+├── magnesium-sleep.webp
 ├── magnesium-sleep/
-└── epimedium-energy/
+│   ├── hero.webp
+│   ├── problem.webp
+│   └── ingredients.webp
+├── epimedium-energy.webp
+├── epimedium-energy/
+├── focus-clarity.webp
+├── focus-clarity/
+└── home-hero.webp
 ```
 
-**GitHub:** Add file داخل المجلد → Commit `main` → Redeploy.
-
-See `focus-clarity/README.md` for full guide.
+**مهم:** `hero.webp` ما يتكرّرش تحت — غير فوق. Homepage card منفصل عن `hero.webp`.
