@@ -1,6 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import { homeHeroImagePath } from '@/config/product-images';
 import { getHeroCopy } from '@/lib/marketing';
-import { PremiumImagePlaceholder } from './PremiumImagePlaceholder';
 import { TrustBadgesRow } from './TrustBadges';
 
 export function HomeHero() {
@@ -8,8 +9,17 @@ export function HomeHero() {
 
   return (
     <section className="px-4 pb-8 pt-6">
-      <div className="relative">
-        <PremiumImagePlaceholder variant="hero" className="min-h-[280px]" />
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-white">
+        <div className="relative aspect-[4/3] w-full min-h-[260px]">
+          <Image
+            src={homeHeroImagePath}
+            alt="لارا للجمال — روتين النوم والطاقة والتركيز"
+            fill
+            className="object-contain p-2"
+            sizes="(max-width: 480px) 100vw, 480px"
+            priority
+          />
+        </div>
         <div className="absolute bottom-4 right-4 rounded-xl border border-border bg-card/95 px-3 py-2 shadow-soft">
           <p className="text-xs font-bold text-primary">{copy.proofTitle}</p>
           <p className="text-[10px] text-muted">{copy.proofSubtitle}</p>

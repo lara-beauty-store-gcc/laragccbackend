@@ -1,12 +1,11 @@
-# Product collection images (homepage)
+# Product images (homepage)
 
-Files used on the **homepage** product cards only:
+| File | Usage |
+|------|--------|
+| `ChatGPT Image Jun 4, 2026, 04_59_07 PM.png` | Homepage card — **روتين النوم** (magnesium) |
+| `ChatGPT Image Jun 4, 2026, 04_59_13 PM.png` | Homepage card — **روتين الطاقة** (epimedium) |
+| `ChatGPT Image Jun 4, 2026, 05_01_37 PM.png` | Homepage card — **روتين التركيز** (focus) |
+| `ChatGPT Image Jun 4, 2026, 05_20_40 PM.png` | Homepage **hero** (3 bottles) |
 
-| File | Product |
-|------|---------|
-| `magnesium-sleep.png` | روتين النوم |
-| `epimedium-energy.png` | روتين الطاقة |
-| `focus-clarity.png` | روتين التركيز |
-
-Replace any file with your Gemini export (keep the same filename).  
-Product **landing page** hero images stay empty until you set `images.heroProduct` in `src/config/products.ts`.
+Paths are wired in `src/config/product-images.ts`.  
+Product landing pages still use placeholder hero until `images.heroProduct` is set.

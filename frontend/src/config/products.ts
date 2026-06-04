@@ -1,4 +1,5 @@
 import type { ProductConfig } from './types';
+import { collectionImageFor } from './product-images';
 
 const bundleOffers = (labels: { one: string; two: string; three: string }) => [
   {
@@ -96,7 +97,7 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
-    collectionImage: '/images/products/magnesium-sleep.png',
+    collectionImage: collectionImageFor('magnesium-sleep'),
     collectionImageAlt: 'روتين النوم — علكات مغنيسيوم و L-ثيانين، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
@@ -192,7 +193,7 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
-    collectionImage: '/images/products/epimedium-energy.png',
+    collectionImage: collectionImageFor('epimedium-energy'),
     collectionImageAlt: 'روتين الطاقة — علكات عشبة العنزة وفيتامين B12، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
@@ -288,7 +289,7 @@ export const products: ProductConfig[] = [
       three: '3 علب',
     }),
     upsell: defaultUpsell,
-    collectionImage: '/images/products/focus-clarity.png',
+    collectionImage: collectionImageFor('focus-clarity'),
     collectionImageAlt: 'روتين التركيز — علكات أوميغا 3 وفيتامينات B، 60 علكة',
     images: { ...defaultImages },
     imageAlts: {
