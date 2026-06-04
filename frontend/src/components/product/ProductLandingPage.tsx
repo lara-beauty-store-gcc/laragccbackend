@@ -9,10 +9,9 @@ import type { ProductOffer } from '@/config/types';
 import { useCart } from '@/lib/cart';
 import { ctaLabel, formatPrice, formatPriceFrom } from '@/lib/pricing';
 import { trackAddToCart, trackViewContent } from '@/lib/tracking';
-import { AnnouncementBar } from '../AnnouncementBar';
+import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { BrandLogo } from '../PremiumImagePlaceholder';
 import { Stars } from '../Stars';
-import { IconArrowLeft } from '../icons';
 import { ProductMedia } from './ProductMedia';
 import { ProductOfferSelector } from './ProductOfferSelector';
 import {
@@ -82,33 +81,33 @@ export function ProductLandingPage({ product }: { product: ProductConfig }) {
 
   return (
     <div className="pb-28">
-      <AnnouncementBar />
-
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur-md">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-primary"
-          aria-label="رجوع"
-        >
-          <IconArrowLeft />
-        </Link>
-        <div className="flex items-center gap-2">
-          <BrandLogo size="sm" />
-          <span className="font-arabic text-xs font-bold text-primary">
-            {businessConfig.brand.nameLocal}
-          </span>
+      <header className="sticky top-0 z-40 border-b border-border bg-white shadow-sm">
+        <div className="mx-auto flex h-14 max-w-container items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 rounded-full p-2 transition-colors hover:bg-primary-soft"
+            aria-label="رجوع"
+          >
+            <ArrowRight className="h-5 w-5 text-foreground" aria-hidden />
+          </Link>
+          <Link href="/" className="flex items-center gap-2">
+            <BrandLogo size="sm" />
+            <span className="font-arabic text-xs font-extrabold text-foreground sm:text-sm">
+              {businessConfig.brand.nameLocal}
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-full p-2 transition-colors hover:bg-primary-soft"
+            aria-label="السلة"
+          >
+            <ShoppingBag className="h-6 w-6 text-foreground" aria-hidden />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-primary"
-          aria-label="السلة"
-        >
-          🛒
-        </button>
       </header>
 
-      <div className="px-4 pt-4">
+      <div className="mx-auto max-w-container px-4 pt-4 sm:px-6 lg:px-8">
         <ProductMedia
           product={product}
           imageKey="heroBeforeAfter"

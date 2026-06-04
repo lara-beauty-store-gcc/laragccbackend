@@ -19,7 +19,7 @@ export function ProductStickyCTA({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md">
-      <div className="mx-auto max-w-lg">
+      <div className="mx-auto max-w-container px-4 sm:px-6">
         <button
           type="button"
           onClick={onClick}

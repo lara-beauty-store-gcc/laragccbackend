@@ -5,7 +5,6 @@ import { HomeHero } from '@/components/HomeHero';
 import { HowItWorks } from '@/components/HowItWorks';
 import { SiteFooter } from '@/components/SiteFooter';
 import { Testimonials } from '@/components/Testimonials';
-import { TrustStrip } from '@/components/TrustBadges';
 import { WhyBrand } from '@/components/WhyBrand';
 
 export default function HomePage() {
@@ -18,7 +17,6 @@ export default function HomePage() {
       <HowItWorks />
       <FinalCTA />
       <FAQAccordion />
-      <TrustStrip />
       <SiteFooter />
     </>
   );

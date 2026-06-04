@@ -1,52 +1,90 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowLeft, Award, FlaskConical, ShieldCheck } from 'lucide-react';
 import { homeHeroImagePath } from '@/config/product-images';
-import { getHeroCopy } from '@/lib/marketing';
-import { TrustBadgesRow } from './TrustBadges';
+import { getHeroCopy, getTrustBadges } from '@/lib/marketing';
 
 export function HomeHero() {
   const copy = getHeroCopy();
+  const badges = getTrustBadges();
 
   return (
-    <section className="px-4 pb-8 pt-6">
-      <div className="relative h-[min(85vw,380px)] min-h-[260px] w-full overflow-hidden rounded-2xl">
-        <Image
-          src={homeHeroImagePath}
-          alt="لارا للجمال — روتين النوم والطاقة والتركيز"
-          fill
-          className="object-cover object-center"
-          sizes="(max-width: 480px) 100vw, 480px"
-          priority
-          unoptimized
-        />
-        <div className="absolute bottom-4 right-4 rounded-xl border border-border bg-card/95 px-3 py-2 shadow-soft">
-          <p className="text-xs font-bold text-primary">{copy.proofTitle}</p>
-          <p className="text-[10px] text-muted">{copy.proofSubtitle}</p>
+    <section className="relative overflow-hidden bg-gradient-to-br from-background via-surface-rose to-primary-soft">
+      <div
+        className="deco pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full border-2 border-secondary/15"
+        aria-hidden
+      />
+      <div
+        className="deco pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full border-2 border-secondary/15"
+        aria-hidden
+      />
+
+      <div className="relative z-10 mx-auto max-w-container px-4 py-12 sm:px-6 lg:grid lg:grid-cols-2 lg:items-center lg:gap-12 lg:px-8 lg:py-20">
+        <div className="order-2 space-y-6 lg:order-1 lg:space-y-7">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+            <FlaskConical className="h-4 w-4 text-primary" aria-hidden />
+            <span className="text-xs font-bold tracking-wide text-primary sm:text-sm">{copy.eyebrow}</span>
+          </div>
+
+          <h1 className="text-balance font-arabic text-3xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            {copy.title}
+            <span className="mt-2 block text-primary">{copy.titleAccent}</span>
+          </h1>
+
+          <p className="max-w-xl text-base font-medium leading-relaxed text-muted lg:text-lg">
+            {copy.subtitle}
+          </p>
+
+          <div className="grid max-w-md grid-cols-4 gap-2">
+            {badges.map((b) => (
+              <div
+                key={b.label}
+                className="rounded-xl border border-border bg-white/70 px-2 py-2.5 text-center backdrop-blur-sm"
+              >
+                <p className="text-[11px] font-extrabold tracking-tight text-primary sm:text-xs">{b.label}</p>
+                <p className="mt-0.5 text-[10px] font-medium leading-tight text-muted">{b.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+            <Link
+              href="#products"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-4 text-sm font-bold text-white transition hover:bg-primary/90"
+            >
+              {copy.cta}
+              <ArrowLeft className="h-5 w-5" aria-hidden />
+            </Link>
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-5 py-3 text-sm font-bold text-foreground">
+              <Award className="h-5 w-5 text-secondary" aria-hidden />
+              <span>{copy.guarantee}</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <p className="mt-6 text-center text-[11px] font-semibold uppercase tracking-widest text-accent">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-2 text-center font-arabic text-2xl font-bold leading-snug text-primary md:text-3xl">
-        {copy.title}
-      </h1>
-      <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted">
-        {copy.subtitle}
-      </p>
-
-      <TrustBadgesRow className="mt-6" compact />
-
-      <Link
-        href="#products"
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-center font-arabic text-sm font-semibold text-white shadow-soft transition hover:bg-primary-dark"
-      >
-        {copy.cta}
-        <span aria-hidden>←</span>
-      </Link>
-
-      <div className="mt-4 rounded-xl border border-accent/40 bg-card px-4 py-3 text-center">
-        <p className="font-arabic text-xs font-semibold text-primary">ضمان استرجاع 30 يوم</p>
+        <div className="relative order-1 mb-8 flex justify-center lg:order-2 lg:mb-0">
+          <div className="absolute inset-0 scale-125 rounded-full bg-primary/15 blur-3xl" aria-hidden />
+          <div className="relative aspect-square w-full max-w-lg overflow-hidden rounded-[3rem] border-8 border-white bg-surface-rose shadow-xl">
+            <Image
+              src={homeHeroImagePath}
+              alt="لارا للجمال — روتين النوم والطاقة والتركيز"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, 512px"
+              priority
+              unoptimized
+            />
+          </div>
+          <div className="absolute -bottom-4 -left-4 flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-xl sm:-bottom-6 sm:-left-6">
+            <div className="rounded-full bg-primary p-3 text-secondary ring-2 ring-secondary/30">
+              <ShieldCheck className="h-6 w-6" aria-hidden />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{copy.guaranteeSub}</p>
+              <p className="text-sm font-extrabold text-foreground">{copy.guaranteeSubLocal}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

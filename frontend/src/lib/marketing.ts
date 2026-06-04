@@ -9,45 +9,60 @@ export { formatPrice, formatPriceFrom } from '@/lib/pricing';
 
 export function getHeroCopy() {
   return {
-    eyebrow: 'OUR FORMULATIONS',
-    title: 'ثلاث علكات. ثلاث احتياجات. روتين واحد.',
+    eyebrow: 'علكات يومية مدروسة — دفع عند الاستلام',
+    title: 'علكات لارا',
+    titleAccent: 'لجسم أهدأ وطاقة أوضح',
     subtitle:
-      'علكات لارا — نوم، طاقة، وتركيز. تركيبات واضحة، جرعات مدروسة، ودفع عند الاستلام داخل الكويت.',
+      'ثلاث تركيبات مستقلة — نوم، طاقة، وتركيز. حلال 100%، جرعات واضحة، وبدون دفع أونلاين داخل الكويت.',
     cta: 'استكشفي العلكات',
-    proofTitle: 'دفع عند الاستلام',
-    proofSubtitle: 'ما في دفع أونلاين — تدفعين لما يوصلك الطلب',
+    guarantee: 'ضمان استرجاع 30 يوم',
+    guaranteeSub: 'GMP Quality',
+    guaranteeSubLocal: 'جودة معتمدة · دفع عند الاستلام',
   };
 }
 
+export function getAnnouncementSlides() {
+  return [
+    { icon: 'shield' as const, text: `شحن داخل ${market.countryName} • دفع عند الاستلام` },
+    { icon: 'heart' as const, text: 'حلال 100% • نباتي • بدون سكر مضاف' },
+    { icon: 'truck' as const, text: 'ضمان استرجاع 30 يوم — تجربة بدون مخاطرة' },
+  ];
+}
+
 export function getAnnouncementText(): string {
-  return `شحن داخل ${market.countryName} • دفع عند الاستلام • ضمان استرجاع 30 يوم`;
+  return getAnnouncementSlides()[0].text;
 }
 
 export function getTrustBadges() {
   return [
-    { icon: 'shield', label: 'جودة معتمدة', sub: 'تصنيع GMP' },
-    { icon: 'leaf', label: 'حلال 100%', sub: 'نباتي' },
-    { icon: 'truck', label: `شحن ${market.countryName}`, sub: '2–4 أيام عمل' },
-    { icon: 'heart', label: 'ضمان 30 يوم', sub: 'استرجاع فلوس' },
+    { icon: 'shield' as const, label: 'جودة GMP', sub: 'تصنيع معتمد' },
+    { icon: 'leaf' as const, label: 'حلال 100%', sub: 'نباتي' },
+    { icon: 'truck' as const, label: `شحن ${market.countryName}`, sub: '2–4 أيام' },
+    { icon: 'heart' as const, label: 'ضمان 30 يوم', sub: 'استرجاع فلوس' },
   ];
 }
 
 export function getWhyBrandCards() {
   return [
     {
-      icon: 'shield',
+      icon: 'shield' as const,
       title: 'تركيبات واضحة، مو وعود فاضية',
       body: 'كل مكوّن مكتوب على العلبة بجرعة واضحة. ما عندنا مكونات سرية ولا خلطات عشوائية.',
     },
     {
-      icon: 'microscope',
+      icon: 'microscope' as const,
       title: 'جرعات مدروسة لكل هدف',
       body: 'كل علكة لمشكلة محددة: نوم، طاقة، أو تركيز — مو علكة وحدة لكل شي.',
     },
     {
-      icon: 'handshake',
-      title: 'دفع عند الاستلام + ضمان',
-      body: 'تجرّبين الروتين براحتك. ما عجبك؟ نرجّع لك فلوسك خلال 30 يوم.',
+      icon: 'handshake' as const,
+      title: 'دفع عند الاستلام + ضمان 30 يوم',
+      body: 'تجرّبين الروتين كاملاً. ما عجبك؟ نرجّع لك فلوسك خلال 30 يوم.',
+    },
+    {
+      icon: 'truck' as const,
+      title: `توصيل ${market.countryName} بدون دفع أونلاين`,
+      body: 'اسمك ورقم جوالك فقط. تدفعين كاش أو كي نت لما يوصلك الطلب.',
     },
   ];
 }
@@ -56,18 +71,18 @@ export function getHowItWorksSteps() {
   return [
     {
       n: '١',
-      title: 'اختاري علكتك',
-      body: 'ثلاث علكات: نوم، طاقة، أو تركيز. اختاري عرض 1 أو 2 أو 3 علب.',
+      title: 'اختاري روتينك',
+      body: 'ثلاث علكات: نوم، طاقة، أو تركيز. اختاري الواحدة أو الروتين الكامل.',
     },
     {
       n: '٢',
       title: 'أكّدي طلبك (بدون دفع)',
-      body: `اسمك ورقم جوالك بس (${market.phoneCountryCode}). الدفع عند الاستلام.`,
+      body: `اسمك ورقم جوالك فقط (${market.phoneCountryCode}). الدفع عند الاستلام.`,
     },
     {
       n: '٣',
       title: 'استلمي وادفعي',
-      body: `نوصّل لباب بيتك داخل ${market.countryName}. تدفعين كاش أو كي نت.`,
+      body: `نوصّل لباب بيتك داخل ${market.countryName} خلال 2–4 أيام. كاش أو كي نت.`,
     },
   ];
 }
@@ -76,24 +91,24 @@ export function getTestimonials(forProduct?: ProductConfig) {
   const focus = forProduct?.shortName ?? 'العلكات';
   return [
     {
-      name: 'نورة العتيبي',
-      meta: '34 سنة • الكويت • مشترية مؤكدة',
+      name: 'سارة العتيبي',
+      meta: '32 سنة • الكويت • مشترية مؤكدة',
+      initial: 'س',
+      text: `أهم شي عندي المكونات واضحة والجرعة مكتوبة. جرّبت ${focus} شهر — والدفع كان عند الاستلام.`,
+      rating: 5,
+    },
+    {
+      name: 'نورة الدوسري',
+      meta: '38 سنة • حولي • مشترية مؤكدة',
       initial: 'ن',
-      text: `جرّبت ${focus} شهر كامل. حسّيت فرق — والدفع كان عند الاستلام.`,
+      text: 'الروتين الكامل أنسب شي — نوم، طاقة، وتركيز. التوصيل سريع والطلب سهل.',
       rating: 5,
     },
     {
       name: 'فاطمة الخالدي',
-      meta: '29 سنة • الفروانية',
+      meta: '35 سنة • الفروانية • مشترية مؤكدة',
       initial: 'ف',
-      text: 'أهم شي المكونات واضحة والتوصيل سريع. الطلب سهل — اسم ورقم بس.',
-      rating: 5,
-    },
-    {
-      name: 'سارة الدوسري',
-      meta: '41 سنة • حولي',
-      initial: 'س',
-      text: 'الروتين الكامل أنسب شي — نوم، طاقة، وتركيز. خدمة ممتازة.',
+      text: 'علكات حلال وواضحة من أول الموقع. خدمة ممتازة وضمان الاسترجاع يطمن.',
       rating: 5,
     },
   ];
@@ -105,19 +120,27 @@ export function getFaqs(forProduct?: ProductConfig) {
   return [
     {
       q: 'هل الدفع عند الاستلام متاح داخل الكويت؟',
-      a: `إي نعم. نوصّل لكل مناطق ${market.countryName} والدفع كاش أو كي نت عند الاستلام.`,
+      a: `نعم. الدفع عند الاستلام (كاش أو كي نت) متوفر في كل مناطق ${market.countryName}، والشحن لجميع الطلبات.`,
     },
     {
       q: 'كم الأسعار؟',
       a: `العروض ${from} — علبة 16 د.ك، علبتين 21 د.ك، 3 علب 29 د.ك.`,
     },
     {
-      q: 'هل العلكات حلال؟',
-      a: 'إي، بكتين نباتي — حلال 100%.',
+      q: 'هل العلكات حلال وبدون جيلاتين حيواني؟',
+      a: 'حلال 100%. العلكات نباتية بالكامل (بكتين بدل الجيلاتين الحيواني)، خالية من السكر المضاف.',
     },
     {
-      q: 'متى ألاحظ فرق؟',
-      a: `تختلف من شخص لشخص. ${ing} يحتاج انتظام 2–4 أسابيع.`,
+      q: 'كم يستغرق التوصيل؟',
+      a: `2–4 أيام عمل داخل ${market.countryName}. فريقنا يتصل فيك لتأكيد العنوان.`,
+    },
+    {
+      q: 'ما هو ضمان الاسترجاع؟',
+      a: 'ضمان رضا 30 يوم كامل. إذا لم يناسبك الروتين، تواصلي معنا وسنسترد قيمة طلبك.',
+    },
+    {
+      q: 'متى سألاحظ النتيجة؟',
+      a: `تختلف من شخص لشخص. ${ing} يحتاج انتظام 2–4 أسابيع لنتيجة أوضح.`,
     },
   ];
 }
@@ -125,9 +148,10 @@ export function getFaqs(forProduct?: ProductConfig) {
 export function getFinalCta() {
   return {
     eyebrow: 'BEGIN YOUR RITUAL',
-    title: 'جسمك يستاهل دعم يومي',
-    subtitle: `ابدئي روتين لارا. دفع عند الاستلام وشحن ${market.countryName}.`,
+    title: 'جسمك يستاهل دعم يومي، مو وعود',
+    subtitle: `ابدئي روتين لارا اليوم. الدفع عند الاستلام، شحن ${market.countryName}، وضمان 30 يوم.`,
     cta: 'استكشفي العلكات الآن',
+    chips: ['دفع عند الاستلام', 'حلال 100%', `شحن ${market.countryName}`, 'ضمان 30 يوم'],
   };
 }
 

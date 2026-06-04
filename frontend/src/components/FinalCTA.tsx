@@ -1,31 +1,35 @@
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { getFinalCta } from '@/lib/marketing';
 
 export function FinalCTA() {
   const copy = getFinalCta();
 
   return (
-    <section className="mx-4 mb-10 overflow-hidden rounded-2xl bg-primary px-6 py-10 text-center text-white shadow-soft">
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-accent">
-        {copy.eyebrow}
-      </p>
-      <h2 className="mt-3 font-arabic text-xl font-bold leading-snug">{copy.title}</h2>
-      <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-white/85">
-        {copy.subtitle}
-      </p>
-      <Link
-        href="#products"
-        className="mt-6 inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 font-arabic text-sm font-bold text-primary-dark transition hover:opacity-95"
-      >
-        {copy.cta}
-        <span aria-hidden>←</span>
-      </Link>
-      <div className="mt-6 flex flex-wrap justify-center gap-3 text-[10px] text-white/80">
-        <span>دفع عند الاستلام</span>
-        <span>•</span>
-        <span>شحن الكويت</span>
-        <span>•</span>
-        <span>ضمان 30 يوم</span>
+    <section className="py-8 lg:py-12">
+      <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
+        <div className="overflow-hidden rounded-[2rem] bg-primary px-6 py-12 text-center text-white shadow-soft lg:px-16 lg:py-16">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-secondary">{copy.eyebrow}</p>
+          <h2 className="mt-4 font-arabic text-2xl font-extrabold leading-snug lg:text-3xl">{copy.title}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/85 lg:text-base">
+            {copy.subtitle}
+          </p>
+          <Link
+            href="#products"
+            className="mt-8 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-secondary px-7 py-4 text-sm font-bold text-primary-dark transition hover:opacity-95 sm:w-auto"
+          >
+            {copy.cta}
+            <ArrowLeft className="h-5 w-5" aria-hidden />
+          </Link>
+          <div className="mt-8 flex flex-wrap justify-center gap-2 text-[11px] font-medium text-white/80 sm:text-xs">
+            {copy.chips.map((chip, i) => (
+              <span key={chip} className="flex items-center gap-2">
+                {i > 0 && <span aria-hidden>•</span>}
+                <span>{chip}</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
