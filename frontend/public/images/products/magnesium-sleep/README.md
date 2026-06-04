@@ -1,9 +1,9 @@
-# صور صفحة المنتج — روتين النوم
+# magnesium-sleep — product page
 
-Path: `frontend/public/images/products/magnesium-sleep/`
+| File | Section |
+|------|---------|
+| `hero.webp` | Top (before/after) |
+| `problem.webp` | ليش يصير هالشي؟ |
+| `ingredients.webp` | المكوّنات |
 
-| ملف | القسم |
-|-----|--------|
-| `hero.png` | فوق الصفحة |
-| `problem.png` | ليش يصير هالشي |
-| `ingredients.png` | المكوّنات |
+Homepage card: `../magnesium-sleep.webp` (separate).

@@ -99,7 +99,7 @@ export const products: ProductConfig[] = [
     upsell: defaultUpsell,
     collectionImage: collectionImageFor('magnesium-sleep'),
     collectionImageAlt: 'روتين النوم — علكات مغنيسيوم و L-ثيانين، 60 علكة',
-    images: { ...defaultImages },
+    images: { ...defaultImages, ...productPageImagesFull('magnesium-sleep') },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد روتين النوم',
       heroProduct: 'علكات المغنيسيوم',
