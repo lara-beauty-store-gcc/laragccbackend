@@ -1,6 +1,16 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  CheckCircle2,
+  Clock,
+  Phone,
+  Shield,
+  Star,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { businessConfig } from '@/config/business';
 import { getProductBySlug, products } from '@/config/products';
@@ -9,11 +19,17 @@ import { formatPrice } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
 import { isValidKuwaitPhone } from '@/lib/phone';
 
-const { market } = businessConfig;
+const { market, cod } = businessConfig;
+
+const trustBadges = [
+  { icon: Shield, label: 'بدون دفع الآن' },
+  { icon: Phone, label: 'نتصل للتأكيد' },
+  { icon: CheckCircle2, label: 'ترفضين بدون تكلفة' },
+] as const;
 
 export function CheckoutModal() {
   const router = useRouter();
-  const { items, isOpen, setOpen, clear, total, addOffer } = useCart();
+  const { items, panel, closePanel, openCart, clear, total, addOffer } = useCart();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [area, setArea] = useState('');
@@ -27,14 +43,20 @@ export function CheckoutModal() {
     [upsellProductSlug],
   );
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  const avgRating = useMemo(() => {
+    if (!products.length) return 4.9;
+    const sum = products.reduce((s, p) => s + p.rating, 0);
+    return Math.round((sum / products.length) * 10) / 10;
+  }, []);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    document.body.style.overflow = panel === 'checkout' ? 'hidden' : '';
+    return () => {
+      if (panel === 'checkout') document.body.style.overflow = '';
+    };
+  }, [panel]);
+
+  if (panel !== 'checkout') return null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,14 +130,14 @@ export function CheckoutModal() {
         setTimeout(() => {
           setUpsellVisible(false);
           clear();
-          setOpen(false);
+          closePanel();
           router.push(`/thank-you?order=${orderId}`);
         }, 12000);
         return;
       }
 
       clear();
-      setOpen(false);
+      closePanel();
       router.push(`/thank-you?order=${orderId}`);
     } catch {
       setError('صار خطأ — حاولي مرة ثانية');
@@ -128,7 +150,11 @@ export function CheckoutModal() {
     if (!upsellProduct) return;
     const extra = upsellProduct.offers[0];
     if (extra) {
-      addOffer(upsellProduct, { ...extra, price: upsellProduct.upsell.price, label: upsellProduct.upsell.label });
+      addOffer(upsellProduct, {
+        ...extra,
+        price: upsellProduct.upsell.price,
+        label: upsellProduct.upsell.label,
+      });
       trackEvent('UpsellAccepted', { value: upsellProduct.upsell.price });
     }
     finishAfterUpsell();
@@ -144,14 +170,21 @@ export function CheckoutModal() {
     const orderId = raw ? JSON.parse(raw).orderId : '';
     setUpsellVisible(false);
     clear();
-    setOpen(false);
+    closePanel();
     router.push(`/thank-you?order=${orderId}`);
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center sm:p-4">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50"
+        aria-label="إغلاق"
+        onClick={closePanel}
+      />
+
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-card p-6 shadow-2xl sm:rounded-2xl"
+        className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-6"
         role="dialog"
         aria-labelledby="checkout-title"
       >
@@ -159,14 +192,14 @@ export function CheckoutModal() {
           <div className="text-center">
             <h2 className="font-arabic text-lg font-bold text-primary">عرض خاص — ثواني بس!</h2>
             <p className="mt-2 text-sm text-muted">{upsellProduct.upsell.subtitle}</p>
-            <p className="mt-4 font-arabic text-2xl font-bold text-accent">
+            <p className="mt-4 font-arabic text-2xl font-bold text-secondary">
               {formatPrice(upsellProduct.upsell.price)}
             </p>
             <p className="text-sm font-semibold text-primary">{upsellProduct.upsell.label}</p>
             <button
               type="button"
               onClick={acceptUpsell}
-              className="mt-6 w-full rounded-xl bg-primary py-4 font-arabic text-sm font-bold text-white"
+              className="mt-6 w-full rounded-2xl bg-primary py-4 font-arabic text-sm font-bold text-white"
             >
               نعم، أضيفي العرض
             </button>
@@ -180,87 +213,200 @@ export function CheckoutModal() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 id="checkout-title" className="font-arabic text-lg font-bold text-primary">
-                تأكيد الطلب — دفع عند الاستلام
-              </h2>
+            <header className="mb-4 flex items-center justify-between">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-1 text-muted hover:bg-surface"
+                onClick={closePanel}
+                className="rounded-full p-2 text-muted transition hover:bg-surface-rose"
                 aria-label="إغلاق"
               >
-                ✕
+                <X className="h-5 w-5" aria-hidden />
               </button>
-            </div>
+              <h2 id="checkout-title" className="font-arabic text-base font-extrabold text-foreground">
+                إتمام الطلب
+              </h2>
+            </header>
 
             {items.length === 0 ? (
-              <p className="text-center text-sm text-muted">السلة فاضية</p>
+              <p className="py-8 text-center text-sm text-muted">السلة فاضية</p>
             ) : (
               <>
-                <ul className="mb-4 space-y-2 border-b border-border pb-4 text-sm">
-                  {items.map((i) => (
-                    <li key={`${i.productId}-${i.offerId}`} className="flex justify-between gap-2">
-                      <span className="font-arabic text-primary">
-                        {i.offerLabel} × {i.qty}
-                      </span>
-                      <span className="font-semibold text-primary">
-                        {formatPrice(i.price * i.qty)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mb-4 text-left font-arabic text-base font-bold text-primary">
-                  المجموع: {formatPrice(total)}
-                </p>
+                <div className="mb-4 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2.5">
+                  <Clock className="h-4 w-4 shrink-0 text-red-600" aria-hidden />
+                  <p className="text-xs font-bold leading-snug text-red-800">
+                    آخر 48 ساعة على عرض التوصيل المجاني داخل الكويت
+                  </p>
+                </div>
 
-                <form onSubmit={submit} className="space-y-3">
+                <div className="mb-5 flex flex-wrap items-center justify-center gap-2 text-center">
+                  <div className="flex items-center gap-0.5 text-secondary">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < Math.round(avgRating) ? 'fill-secondary' : 'fill-none'}`}
+                        aria-hidden
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-extrabold text-foreground">{avgRating}</span>
+                  <span className="text-xs text-muted">· +200 عميلة طلبت هذا الأسبوع</span>
+                </div>
+
+                <div className="mb-5 rounded-2xl bg-surface-rose p-4">
+                  <p className="mb-3 font-arabic text-sm font-extrabold text-foreground">طلبك</p>
+                  <ul className="space-y-3">
+                    {items.map((line) => {
+                      const product = getProductBySlug(line.slug);
+                      const img = product?.collectionImage;
+                      return (
+                        <li
+                          key={`${line.productId}-${line.offerId}`}
+                          className="flex items-start gap-3"
+                        >
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
+                            {img ? (
+                              <Image
+                                src={img}
+                                alt={line.name}
+                                fill
+                                className="object-cover"
+                                sizes="56px"
+                                unoptimized
+                              />
+                            ) : null}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-arabic text-xs font-bold leading-snug text-foreground">
+                              {line.name}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-muted">
+                              {line.offerLabel}
+                              {line.qty > 1 ? ` · ×${line.qty}` : ''}
+                            </p>
+                          </div>
+                          <p className="shrink-0 font-arabic text-sm font-extrabold text-foreground">
+                            {formatPrice(line.price * line.qty)}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="mt-4 flex items-center justify-between border-t border-border/80 pt-3">
+                    <span className="font-arabic text-sm font-bold text-foreground">الإجمالي</span>
+                    <span className="font-arabic text-xl font-extrabold text-primary">
+                      {formatPrice(total)}
+                    </span>
+                  </div>
+                  <p className="mt-2 flex items-center justify-center gap-1 text-center text-[11px] font-bold text-primary">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    توصيل مجاني · {cod.paymentLabel.split('—')[0]?.trim() ?? 'دفع عند الاستلام'}
+                  </p>
+                </div>
+
+                <form onSubmit={submit} className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-muted">الاسم الكامل</label>
+                    <label
+                      htmlFor="checkout-name"
+                      className="mb-1.5 block font-arabic text-sm font-bold text-foreground"
+                    >
+                      الاسم الكامل
+                    </label>
                     <input
+                      id="checkout-name"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-primary"
-                      placeholder="مثال: نورة العتيبي"
+                      className="w-full rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      placeholder="مثال: سارة محمد"
+                      autoComplete="name"
                     />
                   </div>
+
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-muted">رقم الجوال</label>
+                    <label
+                      htmlFor="checkout-phone"
+                      className="mb-1.5 block font-arabic text-sm font-bold text-foreground"
+                    >
+                      رقم الجوال الكويتي
+                    </label>
                     <div className="flex gap-2" dir="ltr">
-                      <span className="flex items-center rounded-xl border border-border bg-surface px-3 text-sm text-muted">
+                      <span className="flex items-center rounded-2xl border border-border bg-surface-rose px-3 text-sm font-bold text-muted">
                         {market.phoneCountryCode}
                       </span>
                       <input
+                        id="checkout-phone"
                         required
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-primary"
+                        className="min-w-0 flex-1 rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                         placeholder={market.phoneExample}
+                        autoComplete="tel"
                       />
                     </div>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+                      يرجى إدخال رقم جوال كويتي صحيح لتأكيد التوصيل
+                    </p>
                   </div>
+
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-muted">المنطقة / العنوان</label>
+                    <label
+                      htmlFor="checkout-area"
+                      className="mb-1.5 block font-arabic text-sm font-bold text-foreground"
+                    >
+                      المنطقة / العنوان
+                      <span className="mr-1 text-xs font-normal text-muted">(اختياري)</span>
+                    </label>
                     <input
+                      id="checkout-area"
                       value={area}
                       onChange={(e) => setArea(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-primary"
+                      className="w-full rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                       placeholder="مثال: حولي، السالمية..."
+                      autoComplete="street-address"
                     />
                   </div>
 
-                  {error && <p className="text-sm text-red-600">{error}</p>}
+                  {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-xl bg-primary py-4 font-arabic text-sm font-bold text-white disabled:opacity-60"
+                    className="w-full rounded-2xl bg-primary py-4 font-arabic text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 disabled:opacity-60"
                   >
-                    {loading ? 'جاري الإرسال...' : 'أكّدي الطلب — COD'}
+                    {loading ? 'جاري الإرسال...' : 'تأكيد الطلب بالدفع عند الاستلام'}
                   </button>
                 </form>
+
+                <div className="mt-5 grid grid-cols-3 gap-2">
+                  {trustBadges.map(({ icon: Icon, label }) => (
+                    <div key={label} className="text-center">
+                      <Icon className="mx-auto h-5 w-5 text-primary" aria-hidden />
+                      <p className="mt-1.5 text-[10px] font-bold leading-tight text-foreground">
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-4 text-center text-[10px] leading-relaxed text-muted">
+                  بالمتابعة أنتِ توافقين على{' '}
+                  <Link href="/" className="underline underline-offset-2">
+                    الشروط والأحكام
+                  </Link>{' '}
+                  و{' '}
+                  <Link href="/" className="underline underline-offset-2">
+                    سياسة الخصوصية
+                  </Link>
+                </p>
+
+                <button
+                  type="button"
+                  onClick={openCart}
+                  className="mt-3 w-full py-2 text-center text-xs font-medium text-muted hover:text-primary"
+                >
+                  ← رجوع للسلة
+                </button>
               </>
             )}
           </>

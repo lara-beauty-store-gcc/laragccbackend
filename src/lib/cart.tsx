@@ -23,6 +23,8 @@ export type CartLine = {
   qty: number;
 };
 
+export type CartPanel = 'closed' | 'cart' | 'checkout';
+
 type CartContextValue = {
   items: CartLine[];
   addOffer: (product: ProductConfig, offer: ProductOffer, qty?: number) => void;
@@ -30,8 +32,12 @@ type CartContextValue = {
   clear: () => void;
   count: number;
   total: number;
+  panel: CartPanel;
   isOpen: boolean;
   setOpen: (open: boolean) => void;
+  openCart: () => void;
+  openCheckout: () => void;
+  closePanel: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -39,8 +45,14 @@ const STORAGE_KEY = 'lara-cart-v2';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
-  const [isOpen, setOpen] = useState(false);
+  const [panel, setPanel] = useState<CartPanel>('closed');
   const [hydrated, setHydrated] = useState(false);
+
+  const openCart = useCallback(() => setPanel('cart'), []);
+  const openCheckout = useCallback(() => setPanel('checkout'), []);
+  const closePanel = useCallback(() => setPanel('closed'), []);
+  const setOpen = useCallback((open: boolean) => setPanel(open ? 'cart' : 'closed'), []);
+  const isOpen = panel !== 'closed';
 
   useEffect(() => {
     try {
@@ -85,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
         ];
       });
-      setOpen(true);
+      setPanel('cart');
     },
     [],
   );
@@ -112,10 +124,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clear,
       count,
       total,
+      panel,
       isOpen,
       setOpen,
+      openCart,
+      openCheckout,
+      closePanel,
     }),
-    [items, addOffer, remove, clear, count, total, isOpen],
+    [items, addOffer, remove, clear, count, total, panel, isOpen, setOpen, openCart, openCheckout, closePanel],
   );
 
   return (

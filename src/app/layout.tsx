@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { businessInputs } from '@/config/business';
 import { CartProvider } from '@/lib/cart';
+import { CartDrawer } from '@/components/CartDrawer';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -29,6 +30,7 @@ export default function RootLayout({
           <AnnouncementBar />
           <SiteHeader />
           <main className="flex-1">{children}</main>
+          <CartDrawer />
           <CheckoutModal />
         </CartProvider>
       </body>
