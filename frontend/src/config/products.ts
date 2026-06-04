@@ -1,5 +1,5 @@
 import type { ProductConfig } from './types';
-import { collectionImageFor, productPageHero } from './product-images';
+import { collectionImageFor, productPageImagesFull } from './product-images';
 
 const bundleOffers = (labels: { one: string; two: string; three: string }) => [
   {
@@ -291,7 +291,7 @@ export const products: ProductConfig[] = [
     upsell: defaultUpsell,
     collectionImage: collectionImageFor('focus-clarity'),
     collectionImageAlt: 'روتين التركيز — علكات أوميغا 3 وفيتامينات B، 60 علكة',
-    images: { ...defaultImages, ...productPageHero('focus-clarity') },
+    images: { ...defaultImages, ...productPageImagesFull('focus-clarity') },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد التركيز',
       heroProduct: 'علكات التركيز',

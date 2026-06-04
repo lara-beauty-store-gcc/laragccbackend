@@ -33,7 +33,14 @@ export function ProductMedia({
   if (src) {
     return (
       <div className={`relative overflow-hidden rounded-2xl ${className}`}>
-        <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 480px) 100vw" />
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 480px) 100vw"
+          unoptimized
+        />
       </div>
     );
   }
