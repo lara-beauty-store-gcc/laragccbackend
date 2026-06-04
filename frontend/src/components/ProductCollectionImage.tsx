@@ -24,6 +24,7 @@ export function ProductCollectionImage({
           className="object-contain p-3"
           sizes="(max-width: 480px) 100vw, 420px"
           priority={priority}
+          unoptimized
         />
       </div>
     );

@@ -18,6 +18,7 @@ export function HomeHero() {
             className="object-contain p-2"
             sizes="(max-width: 480px) 100vw, 480px"
             priority
+            unoptimized
           />
         </div>
         <div className="absolute bottom-4 right-4 rounded-xl border border-border bg-card/95 px-3 py-2 shadow-soft">
