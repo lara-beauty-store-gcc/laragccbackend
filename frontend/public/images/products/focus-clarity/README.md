@@ -1,11 +1,12 @@
-# focus-clarity — صور الصفحة
+# focus-clarity — صور **صفحة المنتج** فقط
 
-| ملف (يخدم فالموقع) | المصدر |
-|---------------------|--------|
-| `hero.png` | قبل/بعد + علبة (05_49_48) |
-| `problem.png` | تعب / تشتت (06_11_25) |
-| `ingredients.png` | علبة + مكونات (06_09_26) |
+| ملف | القسم فالصفحة |
+|-----|----------------|
+| `hero.png` | فوق (قبل/بعد) |
+| `problem.png` | ليش يصير هالشي؟ |
+| `ingredients.png` | المكوّنات |
 
-ملفات `ChatGPT Image...` = نسخ احتياطية — الموقع كيستعمل الأسماء البسيطة فوق.
+**Homepage** كيستعمل ملف منفصل:  
+`../focus-clarity.png` (ما تبدّلوش بـ hero.png)
 
 **GitHub:** `frontend/public/images/products/focus-clarity/`
