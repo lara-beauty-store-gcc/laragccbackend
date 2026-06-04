@@ -19,14 +19,14 @@ export function SiteFooter() {
           <div className="text-center lg:text-right">
             <div className="flex flex-col items-center gap-3 lg:items-start">
               <Image
-                src={brand.logoUrl}
+                src={brand.logoWhiteUrl}
                 alt={brand.nameLocal}
                 width={512}
                 height={512}
-                className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                className="h-16 w-16 object-contain sm:h-20 sm:w-20"
                 unoptimized
               />
-              <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
+              <p className="font-arabic text-lg font-extrabold text-white">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
             </div>
           </div>

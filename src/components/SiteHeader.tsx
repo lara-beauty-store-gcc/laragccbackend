@@ -18,18 +18,18 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border bg-white shadow-sm [transform:translateZ(0)]">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="group flex shrink-0 items-center gap-2" aria-label={brand.nameLocal}>
+          <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label={brand.nameLocal}>
             <Image
               src={brand.logoIconUrl}
               alt=""
-              width={128}
-              height={128}
-              className="h-10 w-10 shrink-0 rounded-lg object-contain sm:h-11 sm:w-11"
+              width={192}
+              height={192}
+              className="h-12 w-12 shrink-0 object-contain drop-shadow-sm transition-transform group-hover:scale-[1.03] sm:h-14 sm:w-14"
               priority
               unoptimized
             />
             <div className="min-w-0 leading-tight">
-              <p className="text-sm font-extrabold tracking-tight text-foreground sm:text-base">
+              <p className="font-arabic text-sm font-extrabold tracking-tight text-primary sm:text-base">
                 {brand.nameLocal}
               </p>
               <p className="font-latin text-[9px] font-bold uppercase tracking-[0.14em] text-secondary sm:text-[10px]">

@@ -5,9 +5,10 @@ export const businessConfig = {
     tagline: 'علكات يومية تدعم جسمك من الداخل',
     description:
       'علكات لارا — تركيبات مدروسة للنوم، الطاقة، والتركيز. دفع عند الاستلام داخل الكويت.',
-    logoUrl: '/images/logo.webp',
-    logoIconUrl: '/images/logo-icon.webp',
-    iconUrl: '/images/logo-icon.webp',
+    logoUrl: '/images/logo-header.webp',
+    logoIconUrl: '/images/logo-header.webp',
+    logoWhiteUrl: '/images/logo-white.webp',
+    iconUrl: '/images/logo-header.webp',
   },
   market: {
     countryName: 'الكويت',
