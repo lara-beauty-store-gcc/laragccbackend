@@ -195,7 +195,7 @@ export const products: ProductConfig[] = [
     upsell: defaultUpsell,
     collectionImage: collectionImageFor('epimedium-energy'),
     collectionImageAlt: 'روتين الطاقة — علكات عشبة العنزة وفيتامين B12، 60 علكة',
-    images: { ...defaultImages },
+    images: { ...defaultImages, ...productPageImagesFull('epimedium-energy') },
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد الطاقة',
       heroProduct: 'علكات عشبة العنزة',

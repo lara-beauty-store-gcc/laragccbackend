@@ -1,9 +1,9 @@
-# صور صفحة المنتج — روتين الطاقة
+# epimedium-energy — product page
 
-Path: `frontend/public/images/products/epimedium-energy/`
+| File | Section |
+|------|---------|
+| `hero.webp` | Top (before/after + product) |
+| `problem.webp` | ليش يصير هالشي؟ |
+| `ingredients.webp` | المكوّنات |
 
-| ملف | القسم |
-|-----|--------|
-| `hero.png` | فوق الصفحة |
-| `problem.png` | ليش يصير هالشي |
-| `ingredients.png` | المكوّنات |
+Homepage card: `../epimedium-energy.webp` (separate).
