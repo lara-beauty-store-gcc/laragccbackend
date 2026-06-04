@@ -36,6 +36,22 @@ const miniTrust = [
 
 const stripIcons = [ShieldCheck, Star, HeartHandshake, Truck] as const;
 
+function HeroStatGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {heroStats.map((s) => (
+        <div
+          key={s.label}
+          className="rounded-xl border border-border bg-background px-2 py-2.5 text-center"
+        >
+          <p className="text-[10px] font-medium leading-tight text-muted">{s.label}</p>
+          <p className="mt-0.5 text-xs font-extrabold text-primary">{s.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProductHero({
   product,
   selectedOffer,
@@ -54,40 +70,33 @@ export function ProductHero({
   return (
     <section
       id="add-to-cart-section"
-      className="bg-gradient-to-br from-background via-surface-rose to-primary-soft py-8 sm:py-12"
+      className="overflow-hidden bg-gradient-to-br from-background via-surface-rose to-primary-soft py-6 sm:py-10"
     >
-      <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="relative flex justify-center">
-            <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+      <div className="mx-auto w-full max-w-lg px-4 sm:max-w-container sm:px-6 lg:max-w-container lg:px-8">
+        <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-12">
+          {/* صورة + إحصائيات داخل كارد واحد — ما يخرجوش من الإطار */}
+          <div className="overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-card sm:p-4">
             <ProductImageCarousel product={product} />
+            <div className="mt-3 sm:mt-4">
+              <HeroStatGrid />
+            </div>
           </div>
 
-          <div className="min-w-0 space-y-5">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {heroStats.map((s) => (
-                <div
-                  key={s.label}
-                  className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
-                >
-                  <p className="text-[10px] font-medium text-muted">{s.label}</p>
-                  <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+          {/* تفاصيل المنتج */}
+          <div className="mt-5 min-w-0 space-y-4 sm:mt-6 sm:space-y-5 lg:mt-0">
+            <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
               <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-              <span className="text-xs font-bold text-primary">
-                {product.routineNameLocal} · {product.routineNameEnglish}
+              <span className="text-xs font-bold leading-snug text-primary">
+                {product.routineNameLocal}
+                <span className="text-muted"> · {product.routineNameEnglish}</span>
               </span>
             </div>
 
-            <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+            <h1 className="text-balance font-arabic text-xl font-extrabold leading-snug text-foreground sm:text-2xl lg:text-3xl">
               {product.heroHeadline}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <Stars rating={product.rating} count={product.reviewsCount} />
               <span className="text-xs text-muted">· تقييم مؤكد</span>
             </div>
@@ -98,27 +107,29 @@ export function ProductHero({
             </p>
 
             {product.scarcityLine ? (
-              <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-4 py-3">
+              <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-3 py-2.5 sm:px-4 sm:py-3">
                 <Flame className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
-                <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">{product.scarcityLine}</p>
+                <p className="text-xs font-bold leading-relaxed text-foreground">{product.scarcityLine}</p>
               </div>
             ) : null}
 
             <p className="text-sm leading-relaxed text-muted">{product.heroSubheadline}</p>
 
-            <ProductOfferSelector
-              product={product}
-              selectedId={selectedOffer.id}
-              onSelect={onSelectOffer}
-            />
+            <div className="overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-card sm:p-4">
+              <ProductOfferSelector
+                product={product}
+                selectedId={selectedOffer.id}
+                onSelect={onSelectOffer}
+              />
+            </div>
 
-            <div ref={ctaRef}>
+            <div ref={ctaRef} className="overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-card sm:p-4">
               <button
                 type="button"
                 onClick={onAddToCart}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 sm:py-4"
               >
-                {ctaLabelText}
+                <span className="text-center leading-snug">{ctaLabelText}</span>
                 <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
               </button>
               <p className="mt-3 text-center text-[11px] font-medium text-muted">
@@ -126,11 +137,11 @@ export function ProductHero({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2">
               {miniTrust.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-border bg-white/70 px-2 py-2.5 text-center"
+                  className="rounded-xl border border-border bg-card px-2 py-2.5 text-center"
                 >
                   <item.icon className="mx-auto h-4 w-4 text-primary" aria-hidden />
                   <p className="mt-1 text-[10px] font-bold leading-tight text-foreground">{item.title}</p>
@@ -142,22 +153,21 @@ export function ProductHero({
         </div>
       </div>
 
-      <div className="mt-8 border-y border-foreground/10 bg-foreground text-white sm:mt-10">
-        <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
-          {product.badges.map((badge, i) => {
-            const Icon = stripIcons[i % stripIcons.length];
-            return (
-              <div
-                key={badge}
-                className="flex min-w-0 items-center gap-3 rounded-xl bg-white/5 px-2 py-1 sm:gap-4 sm:px-0 sm:py-0"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 ring-1 ring-secondary/40 sm:h-11 sm:w-11">
-                  <Icon className="h-5 w-5 text-secondary" aria-hidden />
+      <div className="mx-auto mt-6 w-full max-w-lg px-4 sm:mt-8 sm:max-w-container sm:px-6 lg:max-w-container lg:px-8">
+        <div className="overflow-hidden rounded-2xl bg-foreground text-white sm:rounded-3xl">
+          <div className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5 lg:grid lg:grid-cols-4 lg:gap-4">
+            {product.badges.map((badge, i) => {
+              const Icon = stripIcons[i % stripIcons.length];
+              return (
+                <div key={badge} className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/15 ring-1 ring-secondary/40">
+                    <Icon className="h-5 w-5 text-secondary" aria-hidden />
+                  </div>
+                  <p className="min-w-0 flex-1 text-xs font-extrabold leading-snug sm:text-sm">{badge}</p>
                 </div>
-                <p className="min-w-0 flex-1 text-xs font-extrabold leading-snug sm:text-sm">{badge}</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

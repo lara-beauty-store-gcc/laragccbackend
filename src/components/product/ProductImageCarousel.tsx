@@ -1,16 +1,20 @@
 import type { ProductConfig } from '@/config/products';
 import { MediaFrame } from '@/components/ui/MediaFrame';
 
-/** Single before/after hero — top of product page only (no carousel). */
+/** Single before/after hero — fits inside parent card on mobile. */
 export function ProductImageCarousel({ product }: { product: ProductConfig }) {
   const src = product.images.heroBeforeAfter;
   const alt = product.imageAlts.heroBeforeAfter ?? product.name;
 
   if (!src) {
     return (
-      <div className="aspect-square w-full max-w-lg rounded-3xl border-8 border-white bg-surface-rose shadow-2xl" />
+      <div className="mx-auto aspect-square w-full max-w-[420px] rounded-2xl bg-surface-rose" />
     );
   }
 
-  return <MediaFrame src={src} alt={alt} layout="productHero" priority />;
+  return (
+    <div className="w-full overflow-hidden">
+      <MediaFrame src={src} alt={alt} layout="productHero" priority />
+    </div>
+  );
 }
