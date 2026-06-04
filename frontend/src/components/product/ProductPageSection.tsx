@@ -13,7 +13,7 @@ export function ProductPageSection({
 }) {
   const bg = variant === 'white' ? 'bg-white' : 'bg-surface-rose';
   return (
-    <section id={id} className={`overflow-x-clip py-14 sm:py-16 lg:py-24 ${bg} ${className}`}>
+    <section id={id} className={`py-14 sm:py-16 lg:py-24 ${bg} ${className}`}>
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">{children}</div>
     </section>
   );
@@ -31,11 +31,11 @@ export function ProductSectionHeader({
   className?: string;
 }) {
   return (
-    <div className={`mb-10 max-w-3xl sm:mb-12 lg:mx-auto lg:text-center ${className}`}>
+    <div className={`mb-10 w-full max-w-3xl sm:mb-12 lg:mx-auto lg:text-center ${className}`}>
       {eyebrow ? (
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-secondary">{eyebrow}</p>
       ) : null}
-      <h2 className="font-arabic text-2xl font-extrabold leading-snug text-foreground sm:text-3xl lg:text-4xl">
+      <h2 className="text-balance font-arabic text-2xl font-extrabold leading-snug text-foreground sm:text-3xl lg:text-4xl">
         {title}
       </h2>
       {subtitle ? (

@@ -34,6 +34,8 @@ const miniTrust = [
   { icon: CircleCheckBig, title: 'حلال · GMP', sub: 'تركيبة واضحة' },
 ];
 
+const stripIcons = [ShieldCheck, Star, HeartHandshake, Truck] as const;
+
 export function ProductHero({
   product,
   selectedOffer,
@@ -55,14 +57,14 @@ export function ProductHero({
       className="bg-gradient-to-br from-background via-surface-rose to-primary-soft py-8 sm:py-12"
     >
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="relative order-1 flex justify-center lg:order-1">
+        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative flex justify-center">
             <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
             <ProductImageCarousel product={product} />
           </div>
 
-          <div className="order-2 space-y-5 lg:order-2">
-            <div className="grid grid-cols-4 gap-2">
+          <div className="min-w-0 space-y-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {heroStats.map((s) => (
                 <div
                   key={s.label}
@@ -74,8 +76,8 @@ export function ProductHero({
               ))}
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
-              <Sparkles className="h-4 w-4 text-primary" aria-hidden />
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
               <span className="text-xs font-bold text-primary">
                 {product.routineNameLocal} · {product.routineNameEnglish}
               </span>
@@ -117,7 +119,7 @@ export function ProductHero({
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90"
               >
                 {ctaLabelText}
-                <ArrowLeft className="h-5 w-5" aria-hidden />
+                <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
               </button>
               <p className="mt-3 text-center text-[11px] font-medium text-muted">
                 {cod.paymentLabel} · {formatPrice(selectedOffer.price)}
@@ -132,7 +134,7 @@ export function ProductHero({
                 >
                   <item.icon className="mx-auto h-4 w-4 text-primary" aria-hidden />
                   <p className="mt-1 text-[10px] font-bold leading-tight text-foreground">{item.title}</p>
-                  <p className="text-[9px] text-muted">{item.sub}</p>
+                  <p className="text-[9px] leading-tight text-muted">{item.sub}</p>
                 </div>
               ))}
             </div>
@@ -141,20 +143,18 @@ export function ProductHero({
       </div>
 
       <div className="mt-8 border-y border-foreground/10 bg-foreground text-white sm:mt-10">
-        <div className="mx-auto grid max-w-container grid-cols-2 gap-3 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-4 lg:gap-5 lg:px-8">
+        <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
           {product.badges.map((badge, i) => {
-            const icons = [ShieldCheck, Star, HeartHandshake, Truck];
-            const Icon = icons[i % icons.length];
-            const parts = badge.split('•').map((p) => p.trim());
+            const Icon = stripIcons[i % stripIcons.length];
             return (
-              <div key={badge} className="flex items-center gap-3 sm:gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 ring-1 ring-secondary/40 sm:h-12 sm:w-12">
-                  <Icon className="h-5 w-5 text-secondary sm:h-6 sm:w-6" aria-hidden />
+              <div
+                key={badge}
+                className="flex min-w-0 items-center gap-3 rounded-xl bg-white/5 px-2 py-1 sm:gap-4 sm:px-0 sm:py-0"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 ring-1 ring-secondary/40 sm:h-11 sm:w-11">
+                  <Icon className="h-5 w-5 text-secondary" aria-hidden />
                 </div>
-                <div>
-                  <p className="text-xs font-extrabold leading-snug sm:text-sm">{parts[0] ?? badge}</p>
-                  {parts[1] ? <p className="text-[10px] text-white/65 sm:text-xs">{parts[1]}</p> : null}
-                </div>
+                <p className="min-w-0 flex-1 text-xs font-extrabold leading-snug sm:text-sm">{badge}</p>
               </div>
             );
           })}

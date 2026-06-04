@@ -54,7 +54,7 @@ export function ProductTrustStrip() {
 export function ProblemInsightSection({ product }: { product: ProductConfig }) {
   const stat = product.insightStat;
   return (
-    <ProductPageSection variant="white" className="overflow-x-clip">
+    <ProductPageSection variant="white">
       <ProductSectionHeader
         eyebrow="هل تعانين من هذه؟"
         title="مشاكل تعرفينها — وحلول من الداخل"
@@ -314,7 +314,7 @@ export function ProductTestimonials({ product }: { product: ProductConfig }) {
 export function FailureAlternativesSection({ product }: { product: ProductConfig }) {
   const alts = product.failureAlternatives ?? [];
   return (
-    <ProductPageSection variant="rose" className="overflow-x-clip">
+    <ProductPageSection variant="rose">
       <ProductSectionHeader
         eyebrow="ليش لارا تختلف؟"
         title="قارني — وقرّري بنفسك"
@@ -603,7 +603,7 @@ export function RelatedProducts({
   if (!related.length) return null;
 
   return (
-    <ProductPageSection variant="rose" className="overflow-x-clip">
+    <ProductPageSection variant="rose">
       <ProductSectionHeader title="منتجات أخرى من لارا" />
       <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 md:gap-8">
         {related.map((p) => (

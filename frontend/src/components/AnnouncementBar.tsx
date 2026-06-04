@@ -23,7 +23,7 @@ export function AnnouncementBar() {
 
   return (
     <div className="relative overflow-hidden bg-primary text-white">
-      <div className="mx-auto flex h-9 max-w-container items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-10 max-w-container items-center justify-center px-4 py-1 sm:px-6 lg:px-8">
         {slides.map((slide, i) => {
           const Icon = iconMap[slide.icon] ?? Award;
           const active = i === index;
