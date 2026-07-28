@@ -19,6 +19,10 @@ The backend auto-strips `/u/1/` and handles Google’s 302 redirect correctly.
 
 | date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency |
 
+**Important:** Replace your Apps Script with [ORDERS_WEBHOOK.gs](./ORDERS_WEBHOOK.gs) and **Deploy → New version**. Old scripts can write `[Ljava.lang.Object;@...` garbage in cells.
+
+Delete bad test rows in the sheet (empty name / weird product text).
+
 ## Backend payload example
 
 ```json

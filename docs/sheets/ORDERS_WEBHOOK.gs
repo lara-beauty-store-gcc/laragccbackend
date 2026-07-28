@@ -2,15 +2,13 @@
  * Lara Beauty — Google Apps Script Web App
  * Sheet: https://docs.google.com/spreadsheets/d/1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU
  *
- * Deploy: Deploy → New deployment → Web app
- *   Execute as: Me
- *   Who has access: Anyone
- * Copy URL → GOOGLE_SHEETS_WEBHOOK_URL (backend EasyPanel)
- * Set SCRIPT_SECRET = SHEETS_WEBHOOK_SECRET in backend
+ * 1. Extensions → Apps Script → REPLACE all code with this file
+ * 2. Deploy → Manage deployments → Edit → New version → Deploy
+ * 3. Who has access: Anyone
  */
 
 const SCRIPT_SECRET = 'lara-beauty-secret-2026';
-const SHEET_NAME = 'Tabellenblatt1'; // first tab — rename if needed
+const SHEET_NAME = 'Tabellenblatt1';
 
 const HEADERS = [
   'date',
@@ -26,6 +24,18 @@ const HEADERS = [
   'currency',
 ];
 
+function asText(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) return value.map(asText).filter(Boolean).join(' + ');
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function asNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
@@ -34,8 +44,16 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
+    const orderId = asText(body['order id'] || body.order_id || body.order_number).trim();
+    const name = asText(body.name || body.customer_name).trim();
+    const phone = asText(body.phone || body.phone_e164).trim();
+
+    if (!orderId || !name || !phone) {
+      return jsonResponse({ ok: false, error: 'incomplete_row' }, 400);
+    }
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+    const sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     if (!sheet) {
       return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
     }
@@ -44,45 +62,23 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
     }
 
-    const items = body.items || [];
-    const product =
-      body.product ||
-      items
-        .map(function (i) {
-          return i.productName || i.name || '';
-        })
-        .filter(Boolean)
-        .join(' + ');
-    const sku =
-      body.sku ||
-      items
-        .map(function (i) {
-          return i.sku || '';
-        })
-        .filter(Boolean)
-        .join(', ');
-    const qty =
-      body.quantite ||
-      items.reduce(function (sum, i) {
-        return sum + (Number(i.quantity) || 1);
-      }, 0) ||
-      1;
+    const row = [
+      asText(body.date || body.timestamp || Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd HH:mm')),
+      orderId,
+      asText(body.country || 'AE'),
+      name,
+      phone,
+      asText(body.product || 'طلب لارا'),
+      asText(body.url || body.source_url),
+      asText(body.sku),
+      asNumber(body.quantite || body.quantity || 1),
+      asNumber(body.totalprice || body.total_kwd || body.total),
+      asText(body.currency || 'AED'),
+    ];
 
-    sheet.appendRow([
-      body.date || body.timestamp || new Date().toISOString(),
-      body['order id'] || body.order_id || body.order_number || '',
-      body.country || 'AE',
-      body.name || body.customer_name || '',
-      body.phone || body.phone_e164 || '',
-      product,
-      body.url || body.source_url || '',
-      sku,
-      qty,
-      body.totalprice || body.total_kwd || body.total || 0,
-      body.currency || 'AED',
-    ]);
+    sheet.appendRow(row);
 
-    return jsonResponse({ ok: true, success: true, sheet: sheet.getName() });
+    return jsonResponse({ ok: true, success: true, sheet: sheet.getName(), order_id: orderId });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
