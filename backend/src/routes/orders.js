@@ -114,10 +114,11 @@ router.post('/', async (req, res) => {
       const bundle = normalizeBundleId(i.bundleId);
       const unit = PRICES[bundle] ?? Number(i.unitPriceKwd) ?? PRICES.b1;
       const qty = Number(i.quantity) || 1;
+      const productName = String(i.name || i.productName || '').trim();
       return {
         productId: i.productId || i.id,
-        sku: i.sku,
-        productName: i.name || i.productName,
+        sku: String(i.sku || '').trim(),
+        productName: productName || String(i.sku || '').trim(),
         bundleId: bundle,
         quantity: qty,
         unitPriceKwd: unit,
@@ -160,16 +161,19 @@ router.post('/', async (req, res) => {
       sendTiktokEvent('Purchase', capiPayload, ctx),
       sendSnapEvent('Purchase', capiPayload, ctx),
       forwardToGoogleSheets('Purchase', {
-        ...capiPayload,
         order_number: orderNumber,
+        order_id: orderNumber,
         customer_name: name,
         phone_e164: phoneE164,
+        country: phoneE164.startsWith('+971') ? 'AE' : phoneE164.startsWith('+965') ? 'KW' : 'AE',
         area_notes: order.areaNotes,
         items: dbItems,
         total_kwd: totalAmount,
         total: totalAmount,
+        totalprice: totalAmount,
         currency,
         source_url: order.sourceUrl,
+        url: order.sourceUrl,
         upsell_accepted: order.upsellAccepted,
         payment_method: 'COD',
       }),
