@@ -63,6 +63,13 @@ build_branch() {
 | Proxy port | **${port}** |
 
 Synced from \`main\` @ \`${MAIN_SHA}\` (folder \`${src}/\` on main).
+
+## إلا Deploy فشل
+
+- **Build Path لازم يكون \`/\`** — ماشي \`backend\`
+- **Branch لازم يكون \`${branch}\`** — ماشي \`main\`
+- **Proxy port = ${port}**
+- من بعد push جديد: EasyPanel → **Deploy** (أو Redeploy)
 EOF
 
   cat > "${stage}/README.md" <<EOF
