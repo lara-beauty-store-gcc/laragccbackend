@@ -5,6 +5,9 @@ import type { ProductOffer } from '@/config/types';
 const { market } = businessConfig;
 
 export function formatPrice(amount: number): string {
+  if (market.currency === 'AED') {
+    return `${Math.round(amount)} ${market.currencySymbol}`;
+  }
   const fixed = amount.toFixed(3);
   const trimmed = fixed.replace(/\.?0+$/, '');
   return `${trimmed} ${market.currencySymbol}`;

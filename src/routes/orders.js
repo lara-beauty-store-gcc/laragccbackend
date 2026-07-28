@@ -6,16 +6,42 @@ import { sendMetaEvent } from '../services/meta-capi.js';
 import { forwardToGoogleSheets } from '../services/sheets.js';
 import { sendSnapEvent } from '../services/snap-capi.js';
 import { sendTiktokEvent } from '../services/tiktok-capi.js';
-import { isValidKuwaitPhone, normalizeKuwaitPhone } from '../services/phone.js';
+import { isValidGccPhone, normalizeGccPhone } from '../services/phone.js';
 
 const router = Router();
 
-const PRICES = {
+const PRICES_AED = {
+  b1: 189,
+  b2: 239,
+  b3: 339,
+  UPSELL: 49,
+};
+
+const PRICES_KWD = {
   b1: 16,
   b2: 21,
   b3: 29,
   UPSELL: 9,
 };
+
+function priceTable(currency) {
+  return currency === 'KWD' ? PRICES_KWD : PRICES_AED;
+}
+
+/** Frontend sends offer ids one|two|three; legacy clients may send b1|b2|b3 */
+const BUNDLE_ALIASES = {
+  one: 'b1',
+  two: 'b2',
+  three: 'b3',
+  b1: 'b1',
+  b2: 'b2',
+  b3: 'b3',
+};
+
+function normalizeBundleId(bundleId) {
+  const key = String(bundleId || 'b1').toLowerCase();
+  return BUNDLE_ALIASES[key] || key;
+}
 
 function clientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
@@ -23,11 +49,12 @@ function clientIp(req) {
   return req.socket.remoteAddress || '';
 }
 
-function calcTotal(items, upsell) {
+function calcTotal(items, upsell, currency = 'AED') {
+  const PRICES = priceTable(currency);
   let total = 0;
   for (const item of items) {
-    const bundle = item.bundleId || 'b1';
-    const unit = PRICES[bundle] ?? Number(item.unitPriceKwd) ?? 16;
+    const bundle = normalizeBundleId(item.bundleId);
+    const unit = PRICES[bundle] ?? Number(item.unitPriceKwd) ?? PRICES.b1;
     const qty = Number(item.quantity) || 1;
     total += unit * qty;
   }
@@ -42,15 +69,15 @@ router.post('/', async (req, res) => {
     const body = req.body || {};
     const name = String(body.customerName || body.name || '').trim();
     const phoneRaw = body.phone || body.phoneNumber || '';
-    const phoneE164 = normalizeKuwaitPhone(phoneRaw);
+    const phoneE164 = normalizeGccPhone(phoneRaw);
 
     if (!name || name.length < 2) {
       return res.status(400).json({ error: 'invalid_name' });
     }
-    if (!isValidKuwaitPhone(phoneRaw)) {
+    if (!isValidGccPhone(phoneRaw)) {
       return res.status(400).json({
         error: 'invalid_phone',
-        message: 'رقم جوال كويتي غير صحيح — مثال: 50001234',
+        message: 'رقم جوال إماراتي غير صحيح — مثال: 501234567',
       });
     }
 
@@ -60,7 +87,9 @@ router.post('/', async (req, res) => {
     }
 
     const upsell = body.upsell || {};
-    const totalKwd = calcTotal(items, upsell);
+    const currency = String(body.currency || 'AED').toUpperCase() === 'KWD' ? 'KWD' : 'AED';
+    const PRICES = priceTable(currency);
+    const totalAmount = calcTotal(items, upsell, currency);
     const orderNumber = `LARA-${Date.now().toString(36).toUpperCase()}`;
     const eventId = body.eventId || `purchase_${orderNumber}`;
 
@@ -69,9 +98,9 @@ router.post('/', async (req, res) => {
       customerName: name,
       phoneE164,
       areaNotes: body.area || body.areaNotes || '',
-      subtotalKwd: totalKwd,
-      totalKwd,
-      currency: 'KWD',
+      subtotalKwd: totalAmount,
+      totalKwd: totalAmount,
+      currency,
       paymentMethod: 'COD',
       upsellAccepted: Boolean(upsell.accepted),
       upsellProductId: upsell.productId || null,
@@ -82,8 +111,8 @@ router.post('/', async (req, res) => {
     };
 
     const dbItems = items.map((i) => {
-      const bundle = i.bundleId || 'b1';
-      const unit = PRICES[bundle] ?? 16;
+      const bundle = normalizeBundleId(i.bundleId);
+      const unit = PRICES[bundle] ?? Number(i.unitPriceKwd) ?? PRICES.b1;
       const qty = Number(i.quantity) || 1;
       return {
         productId: i.productId || i.id,
@@ -117,8 +146,8 @@ router.post('/', async (req, res) => {
 
     const capiPayload = {
       orderId: orderNumber,
-      value: totalKwd,
-      currency: 'KWD',
+      value: totalAmount,
+      currency,
       email: body.email,
       phone: phoneE164,
       sourceUrl: order.sourceUrl,
@@ -137,7 +166,7 @@ router.post('/', async (req, res) => {
         phone_e164: phoneE164,
         area_notes: order.areaNotes,
         items: dbItems,
-        total_kwd: totalKwd,
+        total_kwd: totalAmount,
         upsell_accepted: order.upsellAccepted,
         payment_method: 'COD',
       }),
@@ -155,7 +184,9 @@ router.post('/', async (req, res) => {
       success: true,
       orderId: orderNumber,
       orderNumber,
-      totalKwd,
+      totalKwd: totalAmount,
+      total: totalAmount,
+      currency,
       eventId,
       db: Boolean(dbResult),
     });

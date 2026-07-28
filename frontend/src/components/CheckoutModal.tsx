@@ -7,16 +7,17 @@ import { getProductBySlug, products } from '@/config/products';
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
-import { isValidKuwaitPhone } from '@/lib/phone';
+import { isValidMarketPhone } from '@/lib/phone';
 
-const { market } = businessConfig;
+const { market, delivery } = businessConfig;
 
 export function CheckoutModal() {
   const router = useRouter();
   const { items, isOpen, setOpen, clear, total, addOffer } = useCart();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [area, setArea] = useState('');
+  const [emirate, setEmirate] = useState('');
+  const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [upsellVisible, setUpsellVisible] = useState(false);
@@ -43,10 +44,16 @@ export function CheckoutModal() {
       setError('الاسم ورقم الجوال مطلوبين');
       return;
     }
-    if (!isValidKuwaitPhone(phone)) {
-      setError('رقم جوال كويتي غير صحيح — مثال: 50001234');
+    if (!isValidMarketPhone(phone)) {
+      setError(`رقم جوال إماراتي غير صحيح — مثال: ${market.phoneExample}`);
       return;
     }
+    if (!emirate) {
+      setError('اختاري الإمارة');
+      return;
+    }
+
+    const area = [emirate, address.trim()].filter(Boolean).join(' — ');
 
     setLoading(true);
     try {
@@ -88,6 +95,7 @@ export function CheckoutModal() {
             })),
             sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
             eventId: `purchase_${Date.now()}`,
+            currency: market.currency,
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -117,8 +125,17 @@ export function CheckoutModal() {
       clear();
       setOpen(false);
       router.push(`/thank-you?order=${orderId}`);
-    } catch {
-      setError('صار خطأ — حاولي مرة ثانية');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (message === 'invalid_phone' || message.includes('جوال')) {
+        setError(message);
+      } else if (message === 'order_failed') {
+        setError('ما قدرنا نسجّل الطلب — حاولي مرة ثانية');
+      } else if (message) {
+        setError(message);
+      } else {
+        setError('صار خطأ — حاولي مرة ثانية');
+      }
     } finally {
       setLoading(false);
     }
@@ -242,12 +259,29 @@ export function CheckoutModal() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-muted">المنطقة / العنوان</label>
-                    <input
-                      value={area}
-                      onChange={(e) => setArea(e.target.value)}
+                    <label className="mb-1 block text-xs font-medium text-muted">الإمارة</label>
+                    <select
+                      required
+                      value={emirate}
+                      onChange={(e) => setEmirate(e.target.value)}
                       className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-primary"
-                      placeholder="مثال: حولي، السالمية..."
+                    >
+                      <option value="">اختاري الإمارة</option>
+                      {delivery.emirates.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-muted">العنوان التفصيلي</label>
+                    <input
+                      required
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-primary"
+                      placeholder="مثال: شارع الشيخ زايد، بناية 12"
                     />
                   </div>
 

@@ -7,8 +7,8 @@ const bundleOffers = (labels: { one: string; two: string; three: string }) => [
     quantity: 1,
     label: labels.one,
     subtitle: 'شهر كامل — 60 علكة',
-    price: 16,
-    compareAtPrice: 16,
+    price: 189,
+    compareAtPrice: 189,
     badge: '',
   },
   {
@@ -16,8 +16,8 @@ const bundleOffers = (labels: { one: string; two: string; three: string }) => [
     quantity: 2,
     label: labels.two,
     subtitle: 'شهرين — ثبّتي النتيجة',
-    price: 21,
-    compareAtPrice: 32,
+    price: 239,
+    compareAtPrice: 378,
     badge: 'الأكثر اختياراً',
     defaultSelected: true,
   },
@@ -26,15 +26,15 @@ const bundleOffers = (labels: { one: string; two: string; three: string }) => [
     quantity: 3,
     label: labels.three,
     subtitle: '3 علب — أقوى توفير',
-    price: 29,
-    compareAtPrice: 48,
+    price: 339,
+    compareAtPrice: 567,
     badge: 'أكثر توفيراً',
   },
 ];
 
 const defaultUpsell = {
   enabled: true,
-  price: 9,
+  price: 49,
   label: 'علبة إضافية بسعر خاص',
   subtitle: 'كمّلي الروتين — عرض لمرة وحدة بعد الطلب',
 };
@@ -50,15 +50,17 @@ const defaultImages = {
   comparisonImage: '',
 };
 
-const kuwaitCities = [
-  'الكويت',
-  'حولي',
-  'الفروانية',
-  'الأحمدي',
-  'الجهراء',
-  'مبارك الكبير',
-  'السالمية',
-  'الفحيحيل',
+const uaeEmirates = [
+  'دبي',
+  'أبوظبي',
+  'الشارقة',
+  'عجمان',
+  'رأس الخيمة',
+  'الفجيرة',
+  'أم القيوين',
+  'دبي مارينا',
+  'جبل علي',
+  'العين',
 ];
 
 export const products: ProductConfig[] = [
@@ -155,7 +157,7 @@ export const products: ProductConfig[] = [
       source: 'استطلاع داخلي — لارا للجمال',
     },
     scarcityLine: 'عرض الأسبوع: شحن مجاني لطلبات اليوم داخل الكويت',
-    delivery: { cities: kuwaitCities, carriers: ['شركات توصيل معتمدة داخل الكويت'] },
+    delivery: { cities: uaeEmirates, carriers: ['توصيل داخل الإمارات'] },
     relatedSlugs: ['epimedium-energy', 'focus-clarity'],
   },
   {
@@ -251,7 +253,7 @@ export const products: ProductConfig[] = [
       source: 'لارا للجمال — الكويت',
     },
     scarcityLine: 'كمية محدودة هذا الأسبوع — اطلبي قبل نفاد المخزون',
-    delivery: { cities: kuwaitCities, carriers: ['توصيل داخل الكويت'] },
+    delivery: { cities: uaeEmirates, carriers: ['توصيل داخل الإمارات'] },
     relatedSlugs: ['magnesium-sleep', 'focus-clarity'],
   },
   {
@@ -347,7 +349,7 @@ export const products: ProductConfig[] = [
       source: 'استطلاع داخلي',
     },
     scarcityLine: 'آخر طلبات اليوم — توصيل سريع داخل الكويت',
-    delivery: { cities: kuwaitCities, carriers: ['توصيل محلي'] },
+    delivery: { cities: uaeEmirates, carriers: ['توصيل داخل الإمارات'] },
     relatedSlugs: ['magnesium-sleep', 'epimedium-energy'],
   },
 ];
