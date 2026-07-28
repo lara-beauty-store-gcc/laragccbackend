@@ -8,6 +8,17 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+async function renameColumnIfExists(table, from, to) {
+  const check = await pool.query(
+    `SELECT 1 FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = $1 AND column_name = $2`,
+    [table, from],
+  );
+  if (check.rowCount === 0) return;
+  await pool.query(`ALTER TABLE ${table} RENAME COLUMN ${from} TO ${to}`);
+  log.info(`DB migration: ${table}.${from} → ${to}`);
+}
+
 export async function initDb() {
   if (!config.databaseUrl) {
     log.info('DATABASE_URL not set — database disabled');
@@ -58,14 +69,14 @@ export async function initDb() {
       customer_name VARCHAR(255) NOT NULL,
       phone_e164 VARCHAR(20) NOT NULL,
       area_notes TEXT,
-      subtotal_kwd DECIMAL(10,3) NOT NULL,
-      total_kwd DECIMAL(10,3) NOT NULL,
-      currency CHAR(3) DEFAULT 'KWD',
+      subtotal_amount DECIMAL(10,3) NOT NULL,
+      total_amount DECIMAL(10,3) NOT NULL,
+      currency CHAR(3) DEFAULT 'AED',
       payment_method VARCHAR(10) DEFAULT 'COD',
       status VARCHAR(30) DEFAULT 'pending_confirmation',
       upsell_accepted BOOLEAN DEFAULT false,
       upsell_product_id VARCHAR(50),
-      upsell_amount_kwd DECIMAL(10,3),
+      upsell_amount DECIMAL(10,3),
       event_id VARCHAR(64),
       source_url TEXT,
       client_ip TEXT,
@@ -82,8 +93,8 @@ export async function initDb() {
       product_name VARCHAR(255),
       bundle_id VARCHAR(20),
       quantity INT DEFAULT 1,
-      unit_price_kwd DECIMAL(10,3),
-      line_total_kwd DECIMAL(10,3)
+      unit_price DECIMAL(10,3),
+      line_total DECIMAL(10,3)
     );
 
     CREATE TABLE IF NOT EXISTS conversion_events (
@@ -97,9 +108,15 @@ export async function initDb() {
     );
   `);
 
-  await pool.query(`
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS sheet_sync_error TEXT;
-  `);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS sheet_sync_error TEXT`);
+
+  await renameColumnIfExists('orders', 'subtotal_kwd', 'subtotal_amount');
+  await renameColumnIfExists('orders', 'total_kwd', 'total_amount');
+  await renameColumnIfExists('orders', 'upsell_amount_kwd', 'upsell_amount');
+  await renameColumnIfExists('order_items', 'unit_price_kwd', 'unit_price');
+  await renameColumnIfExists('order_items', 'line_total_kwd', 'line_total');
+
+  await pool.query(`ALTER TABLE orders ALTER COLUMN currency SET DEFAULT 'AED'`);
 
   log.info('Database migrations OK');
   return true;
@@ -118,8 +135,8 @@ export async function createOrder(order, items) {
     const r = await client.query(
       `INSERT INTO orders (
         order_number, customer_name, phone_e164, area_notes,
-        subtotal_kwd, total_kwd, currency, payment_method, status,
-        upsell_accepted, upsell_product_id, upsell_amount_kwd,
+        subtotal_amount, total_amount, currency, payment_method, status,
+        upsell_accepted, upsell_product_id, upsell_amount,
         event_id, source_url, client_ip
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING id`,
@@ -128,14 +145,14 @@ export async function createOrder(order, items) {
         order.customerName,
         order.phoneE164,
         order.areaNotes || null,
-        order.subtotalKwd,
-        order.totalKwd,
-        order.currency || 'KWD',
+        order.subtotalAmount,
+        order.totalAmount,
+        order.currency || 'AED',
         order.paymentMethod || 'COD',
         order.status || 'pending_confirmation',
         order.upsellAccepted || false,
         order.upsellProductId || null,
-        order.upsellAmountKwd || null,
+        order.upsellAmount || null,
         order.eventId || null,
         order.sourceUrl || null,
         order.clientIp || null,
@@ -147,7 +164,7 @@ export async function createOrder(order, items) {
       await client.query(
         `INSERT INTO order_items (
           order_id, product_id, sku, product_name, bundle_id,
-          quantity, unit_price_kwd, line_total_kwd
+          quantity, unit_price, line_total
         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
           orderId,
@@ -156,8 +173,8 @@ export async function createOrder(order, items) {
           item.productName,
           item.bundleId || null,
           item.quantity || 1,
-          item.unitPriceKwd,
-          item.lineTotalKwd,
+          item.unitPrice,
+          item.lineTotal,
         ],
       );
     }

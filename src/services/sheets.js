@@ -132,13 +132,19 @@ function totalQuantity(items) {
 }
 
 function resolveTotal(payload, items) {
-  const direct = Number(payload.totalprice ?? payload.total_kwd ?? payload.total ?? payload.value);
+  const direct = Number(
+    payload.totalprice ??
+      payload.total_aed ??
+      payload.total_amount ??
+      payload.total ??
+      payload.value,
+  );
   if (Number.isFinite(direct) && direct > 0) return direct;
 
   const fromItems = items.reduce((sum, item) => {
-    const lineTotal = Number(item.lineTotalKwd ?? item.line_total ?? item.lineTotal);
+    const lineTotal = Number(item.lineTotal ?? item.line_total ?? item.lineTotalAed);
     if (Number.isFinite(lineTotal) && lineTotal > 0) return sum + lineTotal;
-    const unit = Number(item.unitPriceKwd ?? item.unit_price ?? item.price);
+    const unit = Number(item.unitPrice ?? item.unit_price ?? item.price);
     const qty = lineQuantity(item);
     if (Number.isFinite(unit) && unit > 0) return sum + unit * qty;
     return sum;

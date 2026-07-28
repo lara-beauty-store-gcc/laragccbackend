@@ -34,7 +34,7 @@ export async function sendMetaEvent(eventName, payload, context) {
           Object.entries(userData).filter(([, v]) => v != null && v !== ''),
         ),
         custom_data: {
-          currency: payload.currency || 'KWD',
+          currency: payload.currency || 'AED',
           value: payload.value,
           content_ids: payload.contentIds,
           content_type: payload.contentType || 'product',

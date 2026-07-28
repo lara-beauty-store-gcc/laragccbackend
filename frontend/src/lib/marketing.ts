@@ -92,7 +92,7 @@ export function getTestimonials(forProduct?: ProductConfig) {
   return [
     {
       name: 'سارة العتيبي',
-      meta: '32 سنة • الكويت • مشترية مؤكدة',
+      meta: '32 سنة • دبي • مشترية مؤكدة',
       initial: 'س',
       text: `أهم شي عندي المكونات واضحة والجرعة مكتوبة. جرّبت ${focus} شهر — والدفع كان عند الاستلام.`,
       rating: 5,

@@ -32,7 +32,7 @@ export async function sendTiktokEvent(eventName, payload, context) {
           phone: payload.phone ? sha256(normalizePhone(payload.phone)) : undefined,
         },
         properties: {
-          currency: payload.currency || 'KWD',
+          currency: payload.currency || 'AED',
           value: payload.value,
           content_type: payload.contentType || 'product',
           content_ids: payload.contentIds,

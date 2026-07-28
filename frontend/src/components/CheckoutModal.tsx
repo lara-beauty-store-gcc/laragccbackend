@@ -90,7 +90,7 @@ export function CheckoutModal() {
               sku: i.sku,
               name: i.name,
               bundleId: i.offerId,
-              unitPriceKwd: i.price,
+              unitPrice: i.price,
               quantity: i.offerQuantity * i.qty,
             })),
             sourceUrl: typeof window !== 'undefined' ? window.location.href : '',

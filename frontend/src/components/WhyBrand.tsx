@@ -19,7 +19,7 @@ export function WhyBrand() {
           className="mb-12 lg:mb-16"
           eyebrow="Why Lara Beauty"
           title="لارا مو متجر عادي — روتين يومي واضح"
-          subtitle="أربعة أركان: تركيبة واضحة، جرعات مدروسة، حلال، وراحة العميلة في الكويت."
+          subtitle="أربعة أركان: تركيبة واضحة، جرعات مدروسة، حلال، وراحة العميلة في الإمارات."
         />
 
         <div className="grid gap-6 sm:grid-cols-2">

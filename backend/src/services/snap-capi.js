@@ -31,7 +31,7 @@ export async function sendSnapEvent(eventName, payload, context) {
       ? sha256(normalizePhone(payload.phone))
       : undefined,
     price: payload.value,
-    currency: payload.currency || 'KWD',
+    currency: payload.currency || 'AED',
     transaction_id: payload.orderId,
     item_ids: payload.contentIds,
   };

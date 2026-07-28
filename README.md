@@ -1,6 +1,6 @@
 # Lara Beauty — لارا للجمال
 
-Kuwait DTC gummy store · **larabeauty.store** · COD only · KWD
+UAE DTC gummy store · **larabeauty.store** · COD only · AED
 
 ## Documentation (for AI coder / team)
 
@@ -31,7 +31,7 @@ postgres://larabeauty:***@larabeauty_database:5432/larabeauty?sslmode=disable
 2. علكات عشبة العنزة ضد الإرهاق والتعب
 3. علكات ضد التشتت وضعف التركيز
 
-Bundles: **16 / 21 / 29 KWD** · Checkout upsell: **9 KWD**
+Bundles: **189 / 239 / 339 AED** · Checkout upsell: **49 AED**
 
 ## Deploy (EasyPanel) — canonical
 

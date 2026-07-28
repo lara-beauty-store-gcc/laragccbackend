@@ -12,7 +12,7 @@ export function Testimonials({ product }: { product?: ProductConfig }) {
         <SectionHeader
           className="mb-12 lg:mb-16"
           eyebrow="Verified Reviews"
-          title="عميلات جرّبن لارا داخل الكويت"
+          title="عميلات جرّبن لارا داخل الإمارات"
           subtitle="تقييمات حقيقية من مشتريات مؤكدة — دفع عند الاستلام."
         />
 

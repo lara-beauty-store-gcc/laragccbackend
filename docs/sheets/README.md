@@ -29,18 +29,17 @@ Delete bad test rows in the sheet (empty name / weird product text).
 {
   "secret": "your-secret",
   "order_number": "LARA-20260601-A1B2C3",
-  "created_at": "2026-06-01T12:00:00Z",
+  "date": "2026-06-01 12:00",
   "customer_name": "نورة",
-  "phone_e164": "+96550001234",
-  "area_notes": "حولي",
-  "items": [{ "sku": "LARA-MG-01", "bundleId": "b3", "lineTotalKwd": 29 }],
-  "subtotal_kwd": 29,
-  "total_kwd": 29,
-  "currency": "KWD",
-  "payment_method": "COD",
-  "upsell_accepted": false,
-  "event_id": "purchase_xxx",
-  "source_url": "https://larabeauty.store/products/magnesium-sleep",
-  "status": "pending_confirmation"
+  "phone_e164": "+971501234567",
+  "country": "AE",
+  "area_notes": "دبي — مارينا",
+  "items": [{ "sku": "LARA-MG-01", "productName": "Magnesium Glycinate Gummies", "quantity": 2, "lineTotal": 239 }],
+  "total_aed": 239,
+  "totalprice": 239,
+  "currency": "AED",
+  "product": "Magnesium Glycinate Gummies x2",
+  "url": "https://larabeauty.store/products/magnesium-sleep",
+  "payment_method": "COD"
 }
 ```

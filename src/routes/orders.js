@@ -17,17 +17,6 @@ const PRICES_AED = {
   UPSELL: 49,
 };
 
-const PRICES_KWD = {
-  b1: 16,
-  b2: 21,
-  b3: 29,
-  UPSELL: 9,
-};
-
-function priceTable(currency) {
-  return currency === 'KWD' ? PRICES_KWD : PRICES_AED;
-}
-
 /** Frontend sends offer ids one|two|three; legacy clients may send b1|b2|b3 */
 const BUNDLE_ALIASES = {
   one: 'b1',
@@ -49,17 +38,24 @@ function clientIp(req) {
   return req.socket.remoteAddress || '';
 }
 
-function calcTotal(items, upsell, currency = 'AED') {
-  const PRICES = priceTable(currency);
+function lineUnitPrice(item) {
+  const bundle = normalizeBundleId(item.bundleId);
+  return (
+    PRICES_AED[bundle] ??
+    Number(item.unitPrice ?? item.unitPriceAed ?? item.unitPriceKwd) ??
+    PRICES_AED.b1
+  );
+}
+
+function calcTotal(items, upsell) {
   let total = 0;
   for (const item of items) {
-    const bundle = normalizeBundleId(item.bundleId);
-    const unit = PRICES[bundle] ?? Number(item.unitPriceKwd) ?? PRICES.b1;
+    const unit = lineUnitPrice(item);
     const qty = Number(item.quantity) || 1;
     total += unit * qty;
   }
   if (upsell?.accepted) {
-    total += PRICES.UPSELL;
+    total += PRICES_AED.UPSELL;
   }
   return Math.round(total * 1000) / 1000;
 }
@@ -87,9 +83,8 @@ router.post('/', async (req, res) => {
     }
 
     const upsell = body.upsell || {};
-    const currency = String(body.currency || 'AED').toUpperCase() === 'KWD' ? 'KWD' : 'AED';
-    const PRICES = priceTable(currency);
-    const totalAmount = calcTotal(items, upsell, currency);
+    const currency = 'AED';
+    const totalAmount = calcTotal(items, upsell);
     const orderNumber = `LARA-${Date.now().toString(36).toUpperCase()}`;
     const eventId = body.eventId || `purchase_${orderNumber}`;
 
@@ -98,13 +93,13 @@ router.post('/', async (req, res) => {
       customerName: name,
       phoneE164,
       areaNotes: body.area || body.areaNotes || '',
-      subtotalKwd: totalAmount,
-      totalKwd: totalAmount,
+      subtotalAmount: totalAmount,
+      totalAmount,
       currency,
       paymentMethod: 'COD',
       upsellAccepted: Boolean(upsell.accepted),
       upsellProductId: upsell.productId || null,
-      upsellAmountKwd: upsell.accepted ? PRICES.UPSELL : null,
+      upsellAmount: upsell.accepted ? PRICES_AED.UPSELL : null,
       eventId,
       sourceUrl: body.sourceUrl || config.frontendUrl,
       clientIp: clientIp(req),
@@ -112,16 +107,17 @@ router.post('/', async (req, res) => {
 
     const dbItems = items.map((i) => {
       const bundle = normalizeBundleId(i.bundleId);
-      const unit = PRICES[bundle] ?? Number(i.unitPriceKwd) ?? PRICES.b1;
+      const unit = lineUnitPrice(i);
       const qty = Number(i.quantity) || 1;
+      const productName = String(i.name || i.productName || '').trim();
       return {
         productId: i.productId || i.id,
-        sku: i.sku,
-        productName: i.name || i.productName,
+        sku: String(i.sku || '').trim(),
+        productName: productName || String(i.sku || '').trim(),
         bundleId: bundle,
         quantity: qty,
-        unitPriceKwd: unit,
-        lineTotalKwd: unit * qty,
+        unitPrice: unit,
+        lineTotal: unit * qty,
       };
     });
 
@@ -132,8 +128,8 @@ router.post('/', async (req, res) => {
         productName: upsell.name || 'Upsell',
         bundleId: 'UPSELL',
         quantity: 1,
-        unitPriceKwd: PRICES.UPSELL,
-        lineTotalKwd: PRICES.UPSELL,
+        unitPrice: PRICES_AED.UPSELL,
+        lineTotal: PRICES_AED.UPSELL,
       });
     }
 
@@ -160,16 +156,19 @@ router.post('/', async (req, res) => {
       sendTiktokEvent('Purchase', capiPayload, ctx),
       sendSnapEvent('Purchase', capiPayload, ctx),
       forwardToGoogleSheets('Purchase', {
-        ...capiPayload,
         order_number: orderNumber,
+        order_id: orderNumber,
         customer_name: name,
         phone_e164: phoneE164,
+        country: 'AE',
         area_notes: order.areaNotes,
         items: dbItems,
-        total_kwd: totalAmount,
+        total_aed: totalAmount,
         total: totalAmount,
+        totalprice: totalAmount,
         currency,
         source_url: order.sourceUrl,
+        url: order.sourceUrl,
         upsell_accepted: order.upsellAccepted,
         payment_method: 'COD',
       }),
@@ -187,7 +186,7 @@ router.post('/', async (req, res) => {
       success: true,
       orderId: orderNumber,
       orderNumber,
-      totalKwd: totalAmount,
+      totalAed: totalAmount,
       total: totalAmount,
       currency,
       eventId,

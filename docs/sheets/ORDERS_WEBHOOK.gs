@@ -191,7 +191,7 @@ function doPost(e) {
       asText(body.url || body.source_url),
       sku,
       quantite,
-      asNumber(body.totalprice || body['total price'] || body.total_kwd || body.total),
+      asNumber(body.totalprice || body['total price'] || body.total_aed || body.total_amount || body.total),
       asText(body.currency || 'AED'),
     ];
 

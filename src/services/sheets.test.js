@@ -61,14 +61,14 @@ describe('buildSheetBody', () => {
       phone_e164: '+971501234567',
       source_url: 'https://larabeauty.store/products/magnesium-sleep',
       currency: 'AED',
-      total_kwd: 239,
+      total_aed: 239,
       items: [
         {
           sku: 'LARA-MG-01',
           productName: 'Magnesium Glycinate Gummies',
           bundleId: 'b2',
           quantity: 2,
-          unitPriceKwd: 239,
+          unitPrice: 239,
         },
       ],
     });
