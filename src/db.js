@@ -25,7 +25,7 @@ export async function initDb() {
     return false;
   }
 
-  const maxAttempts = 10;
+  const maxAttempts = 3;
   let lastErr;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {

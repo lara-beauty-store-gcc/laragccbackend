@@ -1,18 +1,40 @@
-# EasyPanel — Lara Beauty API (Express)
+# EasyPanel — Lara Beauty API (Backend)
 
-| Setting | Value |
-|---------|--------|
+## Settings (copy exactly)
+
+| Field | Value |
+|-------|--------|
 | Repository | `lara-beauty-store-gcc/laragccbackend` |
-| Branch | `backend` |
-| Build Path | `/` (repo root — Dockerfile at root) |
+| Branch | **`backend`** |
+| Build Path | **`/`** |
 | Dockerfile | `Dockerfile` |
-| Proxy port | **8000** |
+| Proxy port | **`8000`** |
+| Health check | **`/health`** |
 
-Synced from `main` @ `2478757b4d5c0897725084823b50b1060097b30c` (folder `backend/` on main).
+**Not** port 3000 — that is the Store service.
 
-## إلا Deploy فشل
+## Required environment
 
-- **Build Path لازم يكون `/`** — ماشي `backend`
-- **Branch لازم يكون `backend`** — ماشي `main`
-- **Proxy port = 8000**
-- من بعد push جديد: EasyPanel → **Deploy** (أو Redeploy)
+```
+PORT=8000
+NODE_ENV=production
+DATABASE_URL=postgresql://...
+GOOGLE_SHEETS_WEBHOOK_URL=https://script.google.com/macros/s/.../exec
+SHEETS_WEBHOOK_SECRET=lara-beauty-secret-2026
+FRONTEND_URL=https://larabeauty.store
+CORS_ORIGINS=https://larabeauty.store
+```
+
+## Verify after deploy
+
+```bash
+curl https://api.larabeauty.store/health
+```
+
+Expected: `"status":"ok"` and `"sheets":true`
+
+## If build fails
+
+1. Branch must be **`backend`** (not `main` or `frontend`)
+2. Build Path must be **`/`** (empty or slash only)
+3. Do not set Build Path to `backend` — there is no subfolder on this branch
