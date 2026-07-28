@@ -41,6 +41,7 @@ build_branch() {
   stage="$(mktemp -d)"
 
   cp -a "${ROOT}/${src}/." "${stage}/"
+  cp -a "${ROOT}/docs/sheets/ORDERS_WEBHOOK.gs" "${stage}/ORDERS_WEBHOOK.gs"
   rm -rf "${stage}/node_modules" "${stage}/.next" 2>/dev/null || true
   rm -f "${stage}/Dockerfile.standalone" "${stage}/public/index.html" 2>/dev/null || true
 

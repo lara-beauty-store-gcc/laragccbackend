@@ -94,7 +94,20 @@ describe('buildSheetBody', () => {
     }
   });
 
-  it('never forwards arrays in product or sku fields', () => {
+  it('never includes items array in webhook payload', () => {
+    const body = buildSheetBody('Purchase', {
+      order_number: 'LARA-NOITEMS',
+      customer_name: 'Sara',
+      phone_e164: '+971501234567',
+      total_aed: 239,
+      items: [{ sku: 'LARA-MG-01', productName: 'Magnesium Glycinate Gummies', quantity: 2 }],
+    });
+
+    assert.equal(body.items, undefined);
+    assert.equal(body.product, 'Magnesium Glycinate Gummies x2');
+    assert.equal(body['order id'], 'LARA-NOITEMS');
+    assert.equal(body.totalprice, 239);
+  });
     const body = buildSheetBody('Purchase', {
       order_number: 'LARA-ARR',
       customer_name: 'Nora',

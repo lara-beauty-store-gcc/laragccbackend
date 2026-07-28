@@ -201,14 +201,39 @@ export function buildSheetBody(eventName, payload = {}) {
     area: serializeSheetValue(payload.area_notes ?? payload.area),
   };
 
-  // Final guard: never POST arrays/objects to Apps Script (prevents [Ljava.lang.Object;@…]).
+  // Never send items[] or nested objects — Apps Script turns arrays into [Ljava.lang.Object;@…]
+  const ALLOWED = new Set([
+    'secret',
+    'event',
+    'date',
+    'order id',
+    'order_id',
+    'order_number',
+    'country',
+    'name',
+    'phone',
+    'product',
+    'url',
+    'sku',
+    'quantite',
+    'quantity',
+    'totalprice',
+    'total price',
+    'currency',
+    'area',
+  ]);
+
+  const flat = {};
   for (const [key, value] of Object.entries(body)) {
+    if (!ALLOWED.has(key)) continue;
     if (value !== null && typeof value === 'object') {
-      body[key] = serializeSheetValue(value);
+      flat[key] = serializeSheetValue(value);
+    } else {
+      flat[key] = value;
     }
   }
 
-  return body;
+  return flat;
 }
 
 /**
