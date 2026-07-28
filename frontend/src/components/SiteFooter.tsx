@@ -3,9 +3,16 @@ import Link from 'next/link';
 import { Heart, Leaf, ShieldCheck, Truck } from 'lucide-react';
 import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
+import { IconFacebook, IconGlobe, IconTikTok } from '@/components/icons';
 import { getTrustBadges } from '@/lib/marketing';
 
-const { brand, market } = businessInputs;
+const { brand, market, social } = businessInputs;
+
+const socialLinks = [
+  { href: social.tiktok, label: 'TikTok', Icon: IconTikTok },
+  { href: social.facebook, label: 'Facebook', Icon: IconFacebook },
+  { href: social.website, label: 'الموقع', Icon: IconGlobe },
+] as const;
 
 const footerIcons = [ShieldCheck, Leaf, Truck, Heart];
 
@@ -27,6 +34,20 @@ export function SiteFooter() {
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
+              <div className="mt-4 flex items-center gap-3">
+                {socialLinks.map(({ href, label, Icon }) => (
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition hover:border-secondary hover:bg-white/10 hover:text-white"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
