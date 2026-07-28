@@ -67,7 +67,11 @@ export type PersistOrderInput = {
   }>;
 };
 
-export async function persistOrdersLocally(input: PersistOrderInput, presetOrderIds?: string[]) {
+export async function persistOrdersLocally(
+  input: PersistOrderInput,
+  presetOrderIds?: string[],
+  options?: { sheetSynced?: boolean },
+) {
   const store = await readStore();
   const createdAt = new Date().toISOString();
   const orderIds =
@@ -75,6 +79,7 @@ export async function persistOrdersLocally(input: PersistOrderInput, presetOrder
       ? presetOrderIds.map(String)
       : generateLaraOrderIds(input.items.length);
   const rows: StoredOrderRow[] = [];
+  const alreadySynced = options?.sheetSynced === true;
 
   for (let index = 0; index < input.items.length; index += 1) {
     const item = input.items[index];
@@ -94,7 +99,7 @@ export async function persistOrdersLocally(input: PersistOrderInput, presetOrder
       quantity: item.quantity,
       totalPrice: item.totalPrice,
       sourceUrl: input.sourceUrl,
-      sheetSynced: false,
+      sheetSynced: alreadySynced,
     });
   }
 

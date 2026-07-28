@@ -192,11 +192,11 @@ export async function POST(req: Request) {
         sheetSynced = backup.ok;
       }
 
-      await persistOrdersLocally(payload, expandOrderIds(api.orderIds, payload.items.length));
+      await persistOrdersLocally(payload, expandOrderIds(api.orderIds, payload.items.length), {
+        sheetSynced: sheetSynced,
+      });
 
       if (sheetSynced) {
-        await markOrdersSynced(api.orderIds);
-        replayUnsyncedInBackground();
         return Response.json({
           success: true,
           ...api,
@@ -232,9 +232,7 @@ export async function POST(req: Request) {
     const sheetLatencyMs = Date.now() - sheetsStartedAt;
 
     if (sheets.ok) {
-      const local = await persistOrdersLocally(payload, sheets.orderIds);
-      await markOrdersSynced(local.orderIds);
-      replayUnsyncedInBackground();
+      const local = await persistOrdersLocally(payload, sheets.orderIds, { sheetSynced: true });
       return Response.json({
         success: true,
         orderId: sheets.orderIds[0],

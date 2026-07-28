@@ -267,11 +267,35 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
     }
 
+function minutesApart_(a, b) {
+  try {
+    var da = new Date(String(a).replace(' ', 'T'));
+    var db = new Date(String(b).replace(' ', 'T'));
+    if (isNaN(da.getTime()) || isNaN(db.getTime())) return 999;
+    return Math.abs(da.getTime() - db.getTime()) / 60000;
+  } catch (e) {
+    return 999;
+  }
+}
+
+/** Block double-write: same order id, or same phone+name+total within 3 minutes. */
+function isDuplicateOrder_(data, orderId, phone, name, totalprice, date) {
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === orderId) return true;
+
+    var rowPhone = formatPhoneUae(data[i][4]);
+    var rowName = String(data[i][3] || '').trim();
+    var rowTotal = Number(data[i][9]);
+    if (rowPhone === phone && rowName === name && rowTotal === totalprice) {
+      if (minutesApart_(data[i][0], date) <= 3) return true;
+    }
+  }
+  return false;
+}
+
     var data = sheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][1]) === orderId) {
-        return jsonResponse({ ok: true, success: true, duplicate: true, order_id: orderId });
-      }
+    if (isDuplicateOrder_(data, orderId, phone, name, totalprice, date)) {
+      return jsonResponse({ ok: true, success: true, duplicate: true, order_id: orderId });
     }
 
     sheet.appendRow([
