@@ -191,6 +191,7 @@ router.post('/', async (req, res) => {
       currency,
       eventId,
       db: Boolean(dbResult),
+      sheets: sheets.ok ? 'synced' : String(sheets.error || sheets.reason || 'failed'),
     });
   } catch (err) {
     log.error('Order error', err);

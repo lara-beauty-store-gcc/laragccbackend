@@ -1,20 +1,17 @@
-# EasyPanel API service when Source path is EMPTY (repo root).
-# Preferred: Source path = backend → uses backend/Dockerfile instead.
-#
-# Service folder name "backend" in EasyPanel is NOT the git subdirectory.
-
+# Lara Beauty API — EasyPanel: Source path MUST be "backend"
 FROM node:20-alpine
 RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
-COPY backend/package.json backend/package-lock.json ./
-RUN echo ">>> [api] npm ci --omit=dev (monorepo root build)" && \
-    npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+ARG GIT_SHA=unknown
+ENV GIT_SHA=${GIT_SHA}
 
-COPY backend/src ./src
-COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
-    test -f src/index.js || (echo "[FATAL] backend/src missing — wrong git branch?" && exit 1)
+COPY package.json package-lock.json ./
+RUN echo ">>> [api] npm ci --omit=dev" && npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+
+COPY src ./src
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && test -f src/index.js || (echo "[FATAL] src/index.js missing in image" && exit 1)
 
 ENV NODE_ENV=production
 ENV PORT=8000
