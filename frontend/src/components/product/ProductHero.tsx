@@ -54,28 +54,23 @@ export function ProductHero({
   return (
     <section
       id="add-to-cart-section"
-      className="bg-gradient-to-br from-background via-surface-rose to-primary-soft py-8 sm:py-12"
+      className="overflow-x-clip bg-gradient-to-br from-background via-surface-rose to-primary-soft py-6 sm:py-10"
     >
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="relative flex justify-center">
-            <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
-            <ProductImageCarousel product={product} />
+        <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-14">
+          {/* Image — contained so zoom never bleeds outside the frame */}
+          <div className="min-w-0 lg:sticky lg:top-24">
+            <div className="relative mx-auto w-full max-w-lg overflow-hidden">
+              <div
+                className="pointer-events-none absolute inset-0 scale-110 rounded-full bg-primary/10 blur-2xl"
+                aria-hidden
+              />
+              <ProductImageCarousel product={product} />
+            </div>
           </div>
 
-          <div className="min-w-0 space-y-5">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {heroStats.map((s) => (
-                <div
-                  key={s.label}
-                  className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
-                >
-                  <p className="text-[10px] font-medium text-muted">{s.label}</p>
-                  <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
-                </div>
-              ))}
-            </div>
-
+          {/* Copy + conversion — headline directly after image on mobile */}
+          <div className="min-w-0 space-y-4 sm:space-y-5">
             <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
               <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
               <span className="text-xs font-bold text-primary">
@@ -83,7 +78,7 @@ export function ProductHero({
               </span>
             </div>
 
-            <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+            <h1 className="font-arabic text-2xl font-extrabold leading-[1.2] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               {product.heroHeadline}
             </h1>
 
@@ -100,7 +95,9 @@ export function ProductHero({
             {product.scarcityLine ? (
               <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-4 py-3">
                 <Flame className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
-                <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">{product.scarcityLine}</p>
+                <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">
+                  {product.scarcityLine}
+                </p>
               </div>
             ) : null}
 
@@ -138,12 +135,24 @@ export function ProductHero({
                 </div>
               ))}
             </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {heroStats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
+                >
+                  <p className="text-[10px] font-medium text-muted">{s.label}</p>
+                  <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 border-y border-foreground/10 bg-foreground text-white sm:mt-10">
-        <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
+      <div className="mt-6 overflow-x-clip border-y border-foreground/10 bg-foreground text-white sm:mt-8">
+        <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-5 sm:px-6 sm:py-7 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
           {product.badges.map((badge, i) => {
             const Icon = stripIcons[i % stripIcons.length];
             return (

@@ -74,7 +74,7 @@ export function ProductLandingPage({ product }: { product: ProductConfig }) {
   }, [addOffer, product, selectedOffer, setOpen]);
 
   return (
-    <div className="pb-28">
+    <div className="overflow-x-clip pb-28">
       <ProductHero
         product={product}
         selectedOffer={selectedOffer}

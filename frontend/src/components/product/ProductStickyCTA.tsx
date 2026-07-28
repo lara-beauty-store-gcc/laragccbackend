@@ -19,7 +19,7 @@ export function ProductStickyCTA({
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white/95 shadow-[0_-8px_30px_rgba(19,78,58,0.12)] backdrop-blur-md">
+    <div className="fixed inset-x-0 bottom-0 z-50 max-w-[100vw] border-t border-border bg-white/95 shadow-[0_-8px_30px_rgba(19,78,58,0.12)] backdrop-blur-md">
       <div className="mx-auto flex max-w-container items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
         <div className="hidden min-w-0 flex-1 sm:block">
           <p className="truncate font-arabic text-xs font-bold text-foreground">{product.shortName}</p>

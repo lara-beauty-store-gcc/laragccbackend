@@ -12,7 +12,7 @@ export const IMAGE_LAYOUT = {
   /** Product PDP — before/after top */
   productHero: {
     aspect: 'aspect-square',
-    frame: 'relative w-full max-w-lg overflow-hidden rounded-3xl border-8 border-white bg-surface-rose shadow-2xl',
+    frame: 'relative w-full max-w-lg overflow-hidden rounded-2xl border-4 border-white bg-surface-rose shadow-2xl sm:rounded-3xl sm:border-8',
     sizes: '(max-width: 512px) 100vw, 512px',
     object: 'object-cover object-center',
   },

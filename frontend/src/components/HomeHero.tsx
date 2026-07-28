@@ -63,8 +63,8 @@ export function HomeHero() {
         </div>
 
         <div className="order-1 mb-6 w-full lg:order-2 lg:mb-0">
-          <div className="relative mx-auto max-w-lg">
-            <div className="absolute inset-0 scale-125 rounded-full bg-primary/15 blur-3xl" aria-hidden />
+          <div className="relative mx-auto max-w-lg overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 scale-110 rounded-full bg-primary/15 blur-2xl" aria-hidden />
             <MediaFrame
               src={homeHeroImagePath}
               alt="لارا للجمال — روتين النوم والطاقة والتركيز"

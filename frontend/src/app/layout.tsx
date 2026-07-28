@@ -15,6 +15,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: design.themeColor ?? design.primaryColor,
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -28,7 +30,7 @@ export default function RootLayout({
         <CartProvider>
           <AnnouncementBar />
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 overflow-x-clip">{children}</main>
           <CheckoutModal />
         </CartProvider>
       </body>
