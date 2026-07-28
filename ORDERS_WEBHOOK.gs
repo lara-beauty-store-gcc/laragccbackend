@@ -11,8 +11,7 @@
  */
 
 const SCRIPT_SECRET = 'lara-beauty-secret-2026';
-/** من URL ديال الشيت: docs.google.com/spreadsheets/d/هاد_الجزء/edit */
-const SPREADSHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
+const SPREADSHEET_ID = '1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU';
 const SHEET_NAME = 'Tabellenblatt1';
 
 const HEADERS = [
@@ -46,7 +45,6 @@ function cell(value) {
     return String(value);
   }
 
-  // Reject arrays/objects — backend must send flat strings
   return '';
 }
 
@@ -54,6 +52,20 @@ function cellNumber(value) {
   var n = Number(value);
   if (!isFinite(n) || n < 0) return 0;
   return n;
+}
+
+/**
+ * Full customer name — customer_name BEFORE name.
+ * Old store payloads sometimes put a product/short token in `name`.
+ */
+function resolveCustomerName(body) {
+  return cell(
+    body.customer_name ||
+      body.customerName ||
+      body.full_name ||
+      body.fullName ||
+      body.name,
+  );
 }
 
 /** Always +971XXXXXXXXX in sheet column phone */
@@ -66,15 +78,68 @@ function formatPhoneUae(value) {
   if (national.indexOf('971') === 0) national = national.substring(3);
   if (national.indexOf('0') === 0) national = national.substring(1);
 
-  if (/^5\d{8}$/.test(national)) return '+971' + national;
-  if (digits.indexOf('971') === 0) return '+' + digits;
-  if (raw.indexOf('+') === 0) return '+' + digits;
+  var formatted = '';
+  if (/^5\d{8}$/.test(national)) formatted = '+971' + national;
+  else if (digits.indexOf('971') === 0) formatted = '+' + digits;
+  else if (raw.indexOf('+') === 0) formatted = '+' + digits;
+  else formatted = national ? '+971' + national : '';
 
-  return national ? '+971' + national : '';
+  if (formatted && formatted.indexOf('+') !== 0) {
+    formatted = '+' + formatted.replace(/^\+/, '');
+  }
+  return formatted;
+}
+
+/** Build flat product/qty/total from legacy items[] payloads */
+function flattenItems(body) {
+  var items = body.items || body.line_items || body.products;
+  if (!items || !items.length) return {};
+
+  var productParts = [];
+  var skuParts = [];
+  var quantite = 0;
+  var totalprice = 0;
+
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    if (!item || typeof item !== 'object') continue;
+
+    var label = cell(
+      item.product || item.productName || item.name || item.title || item.label,
+    );
+    if (label && !isJavaObjectRef(label)) {
+      var q = cellNumber(item.quantity || item.quantite) || 1;
+      productParts.push(q > 1 ? label + ' x' + q : label);
+    }
+
+    var sku = cell(item.sku);
+    if (sku) skuParts.push(sku);
+
+    quantite += cellNumber(item.quantity || item.quantite) || 1;
+    totalprice += cellNumber(
+      item.totalPrice || item.lineTotal || item.totalprice || item.price || item.lineTotalAed,
+    );
+  }
+
+  var out = {};
+  if (productParts.length) out.product = productParts.join('\n');
+  if (skuParts.length) out.sku = skuParts.join(', ');
+  if (quantite) out.quantite = quantite;
+  if (totalprice) out.totalprice = totalprice;
+  return out;
+}
+
+function resolveOrderId(body) {
+  var ids = body.order_ids || body.orderIds;
+  if (ids && ids.length) {
+    var first = cell(ids[0]);
+    if (first) return first;
+  }
+  return cell(body['order id'] || body.order_id || body.order_number || body.orderId);
 }
 
 function doGet() {
-  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28' });
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v2' });
 }
 
 function doPost(e) {
@@ -89,26 +154,40 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
-    // Flat fields only — ignore body.items completely
-    var orderId = cell(body['order id'] || body.order_id || body.order_number);
-    var name = cell(body.name || body.customer_name);
-    var phone = formatPhoneUae(body.phone || body.phone_e164);
-    var product = cell(body.product);
-    var url = cell(body.url || body.source_url);
-    var sku = cell(body.sku);
+    var fromItems = flattenItems(body);
+
+    var orderId = resolveOrderId(body);
+    var name = resolveCustomerName(body);
+    var phone = formatPhoneUae(
+      body.phone || body.phone_e164 || body.phoneE164 || body.phone_raw,
+    );
+    var product = cell(body.product) || fromItems.product || '';
+    var url = cell(body.url || body.source_url || body.sourceUrl);
+    var sku = cell(body.sku) || fromItems.sku || '';
     var country = cell(body.country) || 'AE';
     var currency = cell(body.currency) || 'AED';
     var date =
       cell(body.date) ||
       Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
-    var quantite = cellNumber(body.quantite || body.quantity);
+    var quantite = cellNumber(body.quantite || body.quantity) || fromItems.quantite || 0;
     var totalprice = cellNumber(
-      body.totalprice || body['total price'] || body.total_aed || body.total_amount || body.total,
+      body.totalprice ||
+        body['total price'] ||
+        body.total_aed ||
+        body.total_amount ||
+        body.total,
     );
+    if (!totalprice && fromItems.totalprice) totalprice = fromItems.totalprice;
 
     if (!orderId || !name || !phone) {
       return jsonResponse(
-        { ok: false, error: 'incomplete_row', orderId: orderId, name: Boolean(name), phone: Boolean(phone) },
+        {
+          ok: false,
+          error: 'incomplete_row',
+          orderId: orderId,
+          name: Boolean(name),
+          phone: Boolean(phone),
+        },
         400,
       );
     }
@@ -126,7 +205,11 @@ function doPost(e) {
     var ss = getSpreadsheet_();
     if (!ss) {
       return jsonResponse(
-        { ok: false, error: 'spreadsheet_not_linked', hint: 'Set SPREADSHEET_ID or bind script via Extensions → Apps Script' },
+        {
+          ok: false,
+          error: 'spreadsheet_not_linked',
+          hint: 'Set SPREADSHEET_ID or bind script via Extensions → Apps Script',
+        },
         500,
       );
     }
@@ -140,7 +223,6 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
     }
 
-    // Skip duplicate order id
     var data = sheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
       if (String(data[i][1]) === orderId) {

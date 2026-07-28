@@ -128,6 +128,8 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
 
   const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || 'lara-beauty-secret-2026';
 
+  const fullName = String(payload.customerName || '').trim();
+
   const body = {
     secret: webhookSecret,
     event: 'Purchase',
@@ -135,11 +137,13 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
     'order id': orderId,
     order_id: orderId,
     order_number: orderId,
+    order_ids: [orderId],
     country: String(payload.country || market.countryCode).trim() || market.countryCode,
-    name: String(payload.customerName || '').trim(),
-    customer_name: String(payload.customerName || '').trim(),
+    customer_name: fullName,
+    customerName: fullName,
+    name: fullName,
     phone: sheetPhone(payload),
-    phone_e164: String(payload.phone || '').trim(),
+    phone_e164: sheetPhone(payload),
     product,
     url,
     sku,
@@ -169,7 +173,7 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
         return { ok: true, orderIds: [returnedId] };
       }
 
-      if (attempt < 3) await sleep(400 * attempt);
+      if (attempt < 3) await sleep(120 * attempt);
     }
 
     let data: Record<string, unknown> = {};

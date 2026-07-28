@@ -27,6 +27,13 @@ function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
 }
 
+/** Replay old failed rows without blocking the thank-you response. */
+function replayUnsyncedInBackground() {
+  void syncUnsyncedOrdersToSheets().catch((err) => {
+    console.warn('[sheets] background replay failed', err);
+  });
+}
+
 function normalizeOrderItems(items: RawSheetItem[]) {
   const ctx = { siteBaseUrl: siteBaseUrl() };
 
@@ -118,6 +125,8 @@ async function forwardToBackendApi(
 }
 
 export async function POST(req: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = (await req.json()) as IncomingBody;
     const customerName = String(body.customerName || '').trim();
@@ -157,23 +166,29 @@ export async function POST(req: Request) {
       })),
     };
 
-    // 1) Backend API — LARA-XXXX IDs + Google Sheets via api.larabeauty.store
+    const sheetPayload = {
+      customerName,
+      phone: phoneE164,
+      phoneAsEntered,
+      country: market.countryCode,
+      currency: market.currency,
+      area: payload.area,
+      sourceUrl: payload.sourceUrl,
+      items: payload.items,
+    };
+
     const api = await forwardToBackendApi(body, phoneE164, normalizedItems);
     if (api) {
       let sheetSynced = api.sheetSynced;
+      let sheetLatencyMs = 0;
 
       if (!sheetSynced) {
+        const sheetsStartedAt = Date.now();
         const backup = await forwardOrderToSheets({
-          customerName,
-          phone: phoneE164,
-          phoneAsEntered,
-          country: market.countryCode,
-          currency: market.currency,
-          area: payload.area,
-          sourceUrl: payload.sourceUrl,
-          items: payload.items,
+          ...sheetPayload,
           orderIds: api.orderIds,
         });
+        sheetLatencyMs = Date.now() - sheetsStartedAt;
         sheetSynced = backup.ok;
       }
 
@@ -181,11 +196,17 @@ export async function POST(req: Request) {
 
       if (sheetSynced) {
         await markOrdersSynced(api.orderIds);
-        await syncUnsyncedOrdersToSheets();
-        return Response.json({ success: true, ...api, sheetSynced: true });
+        replayUnsyncedInBackground();
+        return Response.json({
+          success: true,
+          ...api,
+          sheetSynced: true,
+          sheetLatencyMs,
+          totalMs: Date.now() - startedAt,
+        });
       }
 
-      await syncUnsyncedOrdersToSheets();
+      replayUnsyncedInBackground();
       return Response.json(
         {
           error: 'sheet_sync_failed',
@@ -195,41 +216,38 @@ export async function POST(req: Request) {
           source: api.source,
           sheetSynced: false,
           sheetsStatus: api.sheetsStatus,
+          sheetLatencyMs,
+          totalMs: Date.now() - startedAt,
         },
         { status: 502 },
       );
     }
 
-    // 2) Direct Google Sheets webhook (when API is down)
     const sheetOrderIds = generateLaraOrderIds(payload.items.length);
+    const sheetsStartedAt = Date.now();
     const sheets = await forwardOrderToSheets({
-      customerName,
-      phone: phoneE164,
-      phoneAsEntered,
-      country: market.countryCode,
-      currency: market.currency,
-      area: payload.area,
-      sourceUrl: payload.sourceUrl,
-      items: payload.items,
+      ...sheetPayload,
       orderIds: sheetOrderIds,
     });
+    const sheetLatencyMs = Date.now() - sheetsStartedAt;
 
     if (sheets.ok) {
       const local = await persistOrdersLocally(payload, sheets.orderIds);
       await markOrdersSynced(local.orderIds);
-      await syncUnsyncedOrdersToSheets();
+      replayUnsyncedInBackground();
       return Response.json({
         success: true,
         orderId: sheets.orderIds[0],
         orderIds: sheets.orderIds,
         source: 'sheets',
         sheetSynced: true,
+        sheetLatencyMs,
+        totalMs: Date.now() - startedAt,
       });
     }
 
-    // 3) Local backup — replay when webhook env is set later
     const local = await persistOrdersLocally(payload, sheetOrderIds);
-    await syncUnsyncedOrdersToSheets();
+    replayUnsyncedInBackground();
 
     return Response.json(
       {
@@ -241,6 +259,8 @@ export async function POST(req: Request) {
         sheetSynced: false,
         sheetError: sheets.reason,
         sheetDetail: sheets.detail,
+        sheetLatencyMs,
+        totalMs: Date.now() - startedAt,
       },
       { status: 502 },
     );
