@@ -1,12 +1,30 @@
 /**
  * Lara Beauty — Google Apps Script Web App
- * Deploy: Deploy → New deployment → Web app → Execute as: Me → Who has access: Anyone
- * Set URL in backend GOOGLE_SHEETS_WEBHOOK_URL
- * Set same secret in SHEETS_WEBHOOK_SECRET (backend) and SCRIPT_SECRET below
+ * Sheet: https://docs.google.com/spreadsheets/d/1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU
+ *
+ * Deploy: Deploy → New deployment → Web app
+ *   Execute as: Me
+ *   Who has access: Anyone
+ * Copy URL → GOOGLE_SHEETS_WEBHOOK_URL (backend EasyPanel)
+ * Set SCRIPT_SECRET = SHEETS_WEBHOOK_SECRET in backend
  */
 
-const SCRIPT_SECRET = 'CHANGE_ME_SAME_AS_BACKEND';
-const SHEET_NAME = 'Orders';
+const SCRIPT_SECRET = 'lara-beauty-secret-2026';
+const SHEET_NAME = 'Tabellenblatt1'; // first tab — rename if needed
+
+const HEADERS = [
+  'date',
+  'order id',
+  'country',
+  'name',
+  'phone',
+  'product',
+  'url',
+  'sku',
+  'quantite',
+  'totalprice',
+  'currency',
+];
 
 function doPost(e) {
   try {
@@ -16,65 +34,65 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     if (!sheet) {
       return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
     }
 
-    // Header row if empty
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        'order_number',
-        'created_at',
-        'customer_name',
-        'phone_e164',
-        'area_notes',
-        'items_json',
-        'subtotal_kwd',
-        'total_kwd',
-        'currency',
-        'payment_method',
-        'upsell_accepted',
-        'upsell_product',
-        'upsell_amount_kwd',
-        'event_id',
-        'source_url',
-        'status',
-      ]);
+      sheet.appendRow(HEADERS);
     }
 
+    const items = body.items || [];
+    const product =
+      body.product ||
+      items
+        .map(function (i) {
+          return i.productName || i.name || '';
+        })
+        .filter(Boolean)
+        .join(' + ');
+    const sku =
+      body.sku ||
+      items
+        .map(function (i) {
+          return i.sku || '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    const qty =
+      body.quantite ||
+      items.reduce(function (sum, i) {
+        return sum + (Number(i.quantity) || 1);
+      }, 0) ||
+      1;
+
     sheet.appendRow([
-      body.order_number || '',
-      body.created_at || new Date().toISOString(),
-      body.customer_name || '',
-      body.phone_e164 || '',
-      body.area_notes || '',
-      JSON.stringify(body.items || []),
-      body.subtotal_kwd || 0,
-      body.total_kwd || 0,
-      body.currency || 'KWD',
-      body.payment_method || 'COD',
-      body.upsell_accepted ? 'YES' : 'NO',
-      body.upsell_product || '',
-      body.upsell_amount_kwd || '',
-      body.event_id || '',
-      body.source_url || '',
-      body.status || 'pending_confirmation',
+      body.date || body.timestamp || new Date().toISOString(),
+      body['order id'] || body.order_id || body.order_number || '',
+      body.country || 'AE',
+      body.name || body.customer_name || '',
+      body.phone || body.phone_e164 || '',
+      product,
+      body.url || body.source_url || '',
+      sku,
+      qty,
+      body.totalprice || body.total_kwd || body.total || 0,
+      body.currency || 'AED',
     ]);
 
-    return jsonResponse({ ok: true });
+    return jsonResponse({ ok: true, success: true, sheet: sheet.getName() });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
 }
 
 function jsonResponse(obj, code) {
-  const output = ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
-    ContentService.MimeType.JSON
-  );
-  // Apps Script doesn't set HTTP code easily in all contexts; log code in body
   if (code && code !== 200) {
     obj._httpStatus = code;
   }
-  return output;
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
+    ContentService.MimeType.JSON
+  );
 }

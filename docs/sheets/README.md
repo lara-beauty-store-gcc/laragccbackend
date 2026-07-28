@@ -2,15 +2,22 @@
 
 ## Setup
 
-1. Create a new Google Sheet named **Lara Beauty Orders**
-2. Import headers from [orders-template.csv](./orders-template.csv) OR let script auto-create
-3. **Extensions → Apps Script** → paste [ORDERS_WEBHOOK.gs](./ORDERS_WEBHOOK.gs)
-4. Set `SCRIPT_SECRET` to a long random string
-5. **Deploy → New deployment → Web app**
+1. Open your Google Sheet: **Sheet Orders Lara beauty**
+2. **Extensions → Apps Script** → paste [ORDERS_WEBHOOK.gs](./ORDERS_WEBHOOK.gs)
+3. Set `SCRIPT_SECRET = 'lara-beauty-secret-2026'` (same as backend `SHEETS_WEBHOOK_SECRET`)
+4. **Deploy → New deployment → Web app**
    - Execute as: Me
    - Who has access: **Anyone**
-6. Copy Web App URL → `GOOGLE_SHEETS_WEBHOOK_URL` in backend EasyPanel
-7. Set `SHEETS_WEBHOOK_SECRET` to the same value as `SCRIPT_SECRET`
+5. Copy Web App URL → `GOOGLE_SHEETS_WEBHOOK_URL` in EasyPanel API service
+
+**Important:** Use the URL **without** `/u/1/` if possible:
+`https://script.google.com/macros/s/AKfycb.../exec`
+
+The backend auto-strips `/u/1/` and handles Google’s 302 redirect correctly.
+
+## Sheet columns (Tabellenblatt1)
+
+| date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency |
 
 ## Backend payload example
 
