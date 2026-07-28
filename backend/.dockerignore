@@ -4,9 +4,6 @@ node_modules
 .env.*
 !.env.example
 npm-debug.log
-*.md
-Dockerfile*
-docker-compose*
 coverage
 *.log
 .DS_Store

@@ -3,6 +3,9 @@ FROM node:20-alpine
 RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
+ARG GIT_SHA=unknown
+ENV GIT_SHA=${GIT_SHA}
+
 COPY package.json package-lock.json ./
 RUN echo ">>> [api] npm ci --omit=dev" && npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 

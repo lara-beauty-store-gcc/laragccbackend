@@ -6,6 +6,18 @@
 
 ---
 
+## Deploy في 10–30 ثانية؟
+
+**عادي** إلا Docker cache خدام — ما يعنيش deploy فاشل.
+
+تأكد من:
+- **Build type** = `Dockerfile` (ماشي Nixpacks)
+- **Build Path** = `backend` (فرع `main`) أو **فارغ** (فرع `backend`)
+- **Port** = `8000`
+- بعد deploy: `curl https://api.larabeauty.store/health` → `"status":"ok"`
+
+---
+
 ## الحل 1 — الأضمن (يخدم دائماً)
 
 | الحقل | القيمة |

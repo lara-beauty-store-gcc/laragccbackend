@@ -8,6 +8,7 @@ echo "========================================"
 echo "NODE_ENV=${NODE_ENV:-unset}"
 echo "PORT=${PORT:-unset}"
 echo "PWD=$(pwd)"
+echo "Git: ${GIT_SHA:-unknown}"
 echo "Node: $(node -v)"
 echo "Files: src/index.js=$(test -f src/index.js && echo yes || echo NO)"
 

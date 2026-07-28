@@ -70,6 +70,7 @@ export async function initDb() {
       source_url TEXT,
       client_ip TEXT,
       sheet_synced BOOLEAN DEFAULT false,
+      sheet_sync_error TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
 
@@ -94,6 +95,10 @@ export async function initDb() {
       client_ip TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+  `);
+
+  await pool.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS sheet_sync_error TEXT;
   `);
 
   log.info('Database migrations OK');
@@ -169,10 +174,14 @@ export async function createOrder(order, items) {
 
 export async function markSheetSynced(orderNumber, error) {
   if (!pool) return;
-  await pool.query(
-    `UPDATE orders SET sheet_synced = $2, sheet_sync_error = $3 WHERE order_number = $1`,
-    [orderNumber, !error, error || null],
-  );
+  try {
+    await pool.query(
+      `UPDATE orders SET sheet_synced = $2, sheet_sync_error = $3 WHERE order_number = $1`,
+      [orderNumber, !error, error || null],
+    );
+  } catch (err) {
+    log.warn('markSheetSynced failed', err.message);
+  }
 }
 
 export async function logEvent(eventName, payload, results, clientIp) {

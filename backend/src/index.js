@@ -50,6 +50,7 @@ app.get('/health', async (_req, res) => {
     status: 'ok',
     app: config.appName,
     env: config.appEnv,
+    git: config.gitSha || 'unknown',
     db,
     configured: isConfigured(),
   });
