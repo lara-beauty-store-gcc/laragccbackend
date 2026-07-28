@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { getProductById, products } from '@/config/products';
 import type { ProductConfig } from '@/config/products';
 import type { ProductOffer } from '@/config/types';
 
@@ -35,7 +36,36 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = 'lara-cart-v2';
+const STORAGE_KEY = 'lara-cart-v3';
+
+function reconcileCartLine(line: CartLine): CartLine | null {
+  const product =
+    getProductById(line.productId) ?? products.find((p) => p.slug === line.slug);
+  if (!product) return null;
+
+  const offer = product.offers.find((o) => o.id === line.offerId);
+  if (!offer) return null;
+
+  return {
+    ...line,
+    productId: product.id,
+    slug: product.slug,
+    sku: product.sku,
+    name: product.name,
+    offerId: offer.id,
+    offerQuantity: offer.quantity,
+    offerLabel: offer.label,
+    price: offer.price,
+    qty: Math.max(1, Number(line.qty) || 1),
+  };
+}
+
+export function reconcileCartItems(stored: CartLine[]): CartLine[] {
+  if (!Array.isArray(stored)) return [];
+  return stored
+    .map((line) => reconcileCartLine(line))
+    .filter((line): line is CartLine => line !== null);
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
@@ -45,7 +75,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
+      if (raw) {
+        setItems(reconcileCartItems(JSON.parse(raw)));
+      } else {
+        const legacy = localStorage.getItem('lara-cart-v2');
+        if (legacy) {
+          setItems(reconcileCartItems(JSON.parse(legacy)));
+          localStorage.removeItem('lara-cart-v2');
+        }
+      }
     } catch {
       /* ignore */
     }
@@ -66,7 +104,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((i) =>
             i.productId === product.id && i.offerId === offer.id
-              ? { ...i, qty: i.qty + qty }
+              ? {
+                  ...i,
+                  qty: i.qty + qty,
+                  price: offer.price,
+                  offerLabel: offer.label,
+                  offerQuantity: offer.quantity,
+                  name: product.name,
+                }
               : i,
           );
         }

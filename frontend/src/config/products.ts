@@ -360,6 +360,10 @@ export function getProductBySlug(slug: string): ProductConfig | undefined {
   return products.find((p) => p.slug === slug);
 }
 
+export function getProductById(id: string): ProductConfig | undefined {
+  return products.find((p) => p.id === id);
+}
+
 export function getLowestOfferPrice(product: ProductConfig): number {
   return Math.min(...product.offers.map((o) => o.price));
 }

@@ -116,7 +116,7 @@ export function getTestimonials(forProduct?: ProductConfig) {
 
 export function getFaqs(forProduct?: ProductConfig) {
   const ing = forProduct?.mainIngredient ?? 'المكوّنات';
-  const from = forProduct ? formatPriceFrom(getLowestOfferPrice(forProduct)) : 'من 16 د.ك';
+  const from = forProduct ? formatPriceFrom(getLowestOfferPrice(forProduct)) : 'من 189 د.إ';
   return [
     {
       q: 'هل الدفع عند الاستلام متاح داخل الإمارات؟',

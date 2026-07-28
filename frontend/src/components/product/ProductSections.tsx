@@ -549,10 +549,12 @@ export function DeliveryCitiesSection({ product }: { product: ProductConfig }) {
 }
 
 export function ProductFAQ({ product }: { product: ProductConfig }) {
+  const lowest = getLowestOfferPrice(product);
+  const highest = Math.max(...product.offers.map((o) => o.price));
   const base = product.faq ?? [
     {
       question: 'كم السعر والعروض؟',
-      answer: `عروض من ${formatPrice(16)} لعلبة وحدة إلى ${formatPrice(29)} لثلاث علب. الدفع عند الاستلام.`,
+      answer: `عروض من ${formatPrice(lowest)} لعلبة وحدة إلى ${formatPrice(highest)} لثلاث علب. الدفع عند الاستلام.`,
     },
     {
       question: 'متى أشوف نتيجة؟',
