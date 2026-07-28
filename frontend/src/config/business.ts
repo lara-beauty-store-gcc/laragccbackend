@@ -25,6 +25,12 @@ export const businessConfig = {
     confirmationPromise: 'فريقنا يتصل فيك خلال ساعات لتأكيد العنوان',
     returnGuarantee: 'ضمان استرجاع 30 يوم — فلوسك ترجع إذا ما عجبك الروتين',
   },
+  social: {
+    instagram: 'https://www.instagram.com/lara_beauty_gcc',
+    tiktok: 'https://www.tiktok.com/@lara_beauty_gcc',
+    facebook: 'https://www.facebook.com/profile.php?id=61592789362233',
+    website: 'https://larabeauty.store',
+  },
   design: {
     primaryColor: '#134E3A',
     primaryDarkColor: '#0F3D2E',
