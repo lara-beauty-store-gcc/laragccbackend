@@ -101,7 +101,14 @@ async function forwardToBackendApi(
 
       if (orderIds.length === 0) continue;
 
-      return { orderId: orderIds[0], orderIds, source: 'api' as const, sheetSynced: true };
+      const sheetsOk = data.sheets === 'synced' || data.sheetSynced === true;
+      return {
+        orderId: orderIds[0],
+        orderIds,
+        source: 'api' as const,
+        sheetSynced: sheetsOk,
+        sheetsStatus: String(data.sheets || ''),
+      };
     } catch {
       // try next format
     }
@@ -153,9 +160,44 @@ export async function POST(req: Request) {
     // 1) Backend API — LARA-XXXX IDs + Google Sheets via api.larabeauty.store
     const api = await forwardToBackendApi(body, phoneE164, normalizedItems);
     if (api) {
+      let sheetSynced = api.sheetSynced;
+
+      if (!sheetSynced) {
+        const backup = await forwardOrderToSheets({
+          customerName,
+          phone: phoneE164,
+          phoneAsEntered,
+          country: market.countryCode,
+          currency: market.currency,
+          area: payload.area,
+          sourceUrl: payload.sourceUrl,
+          items: payload.items,
+          orderIds: api.orderIds,
+        });
+        sheetSynced = backup.ok;
+      }
+
       await persistOrdersLocally(payload, expandOrderIds(api.orderIds, payload.items.length));
-      await markOrdersSynced(api.orderIds);
-      return Response.json({ success: true, ...api });
+
+      if (sheetSynced) {
+        await markOrdersSynced(api.orderIds);
+        await syncUnsyncedOrdersToSheets();
+        return Response.json({ success: true, ...api, sheetSynced: true });
+      }
+
+      await syncUnsyncedOrdersToSheets();
+      return Response.json(
+        {
+          error: 'sheet_sync_failed',
+          message: 'تم تسجيل الطلب لكن ما وصلش للشيت فالحين — جربي مرة ثانية',
+          orderId: api.orderId,
+          orderIds: api.orderIds,
+          source: api.source,
+          sheetSynced: false,
+          sheetsStatus: api.sheetsStatus,
+        },
+        { status: 502 },
+      );
     }
 
     // 2) Direct Google Sheets webhook (when API is down)
@@ -175,7 +217,7 @@ export async function POST(req: Request) {
     if (sheets.ok) {
       const local = await persistOrdersLocally(payload, sheets.orderIds);
       await markOrdersSynced(local.orderIds);
-      void syncUnsyncedOrdersToSheets();
+      await syncUnsyncedOrdersToSheets();
       return Response.json({
         success: true,
         orderId: sheets.orderIds[0],
@@ -187,7 +229,7 @@ export async function POST(req: Request) {
 
     // 3) Local backup — replay when webhook env is set later
     const local = await persistOrdersLocally(payload, sheetOrderIds);
-    void syncUnsyncedOrdersToSheets();
+    await syncUnsyncedOrdersToSheets();
 
     return Response.json(
       {

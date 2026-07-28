@@ -80,6 +80,10 @@ async function postToAppsScript(url: string, body: Record<string, unknown>) {
   return { ok: init.ok, status: init.status, text };
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise<SheetsForwardResult> {
   const webhookUrl = sheetsWebhookUrl();
   if (!webhookUrl) {
@@ -140,29 +144,42 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
   };
 
   try {
-    const result = await postToAppsScript(webhookUrl, body);
+    let lastResult: { ok: boolean; status: number; text: string } | null = null;
+
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      lastResult = await postToAppsScript(webhookUrl, body);
+      let data: Record<string, unknown> = {};
+      try {
+        data = JSON.parse(lastResult.text) as Record<string, unknown>;
+      } catch {
+        data = { raw: lastResult.text.slice(0, 500) };
+      }
+
+      const success = data.success === true || (data.ok === true && !data.error);
+      if (success) {
+        const returnedId = String(data.order_id || orderId);
+        return { ok: true, orderIds: [returnedId] };
+      }
+
+      if (attempt < 3) await sleep(400 * attempt);
+    }
+
     let data: Record<string, unknown> = {};
     try {
-      data = JSON.parse(result.text) as Record<string, unknown>;
+      data = JSON.parse(lastResult?.text || '') as Record<string, unknown>;
     } catch {
-      data = { raw: result.text.slice(0, 500) };
+      data = { raw: String(lastResult?.text || '').slice(0, 500) };
     }
 
-    const success = data.success === true || (data.ok === true && !data.error);
-    if (!success) {
-      const detail =
-        typeof data.error === 'string'
-          ? data.error
-          : typeof data.raw === 'string'
-            ? data.raw
-            : result.text.slice(0, 500);
+    const detail =
+      typeof data.error === 'string'
+        ? data.error
+        : typeof data.raw === 'string'
+          ? data.raw
+          : String(lastResult?.text || '').slice(0, 500);
 
-      console.warn('[sheets] webhook failed', result.status, detail);
-      return { ok: false, reason: 'sheets_rejected', status: result.status, detail };
-    }
-
-    const returnedId = String(data.order_id || orderId);
-    return { ok: true, orderIds: [returnedId] };
+    console.warn('[sheets] webhook failed after retries', lastResult?.status, detail);
+    return { ok: false, reason: 'sheets_rejected', status: lastResult?.status, detail };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[sheets] webhook error', message);
