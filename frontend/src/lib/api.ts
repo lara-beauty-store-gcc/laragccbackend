@@ -13,11 +13,18 @@ export function getServerApiUrl(): string {
   );
 }
 
-/** Base URL for client-side fetches — empty string = same origin. */
+/** Base URL for client-side fetches. Prefer direct API (CORS allowed) so orders work even without /api proxy route. */
 export function getClientApiBase(): string {
-  if (process.env.NEXT_PUBLIC_API_URL?.trim()) {
-    return process.env.NEXT_PUBLIC_API_URL.trim().replace(/\/$/, '');
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, '');
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'larabeauty.store' || host === 'www.larabeauty.store') {
+      return PRODUCTION_API;
+    }
   }
+
   return '';
 }
 

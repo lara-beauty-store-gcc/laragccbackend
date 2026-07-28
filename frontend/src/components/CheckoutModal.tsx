@@ -87,7 +87,7 @@ export function CheckoutModal() {
       }
 
       const orderId = data.orderNumber || data.orderId;
-      if (!orderId) {
+      if (!orderId || !String(orderId).startsWith('LARA-')) {
         throw new Error('order_failed');
       }
 
