@@ -63,7 +63,7 @@ build_branch() {
 |---------|--------|
 | Repository | \`lara-beauty-store-gcc/laragccbackend\` |
 | Branch | \`${branch}\` |
-| Build Path | **leave empty** (do NOT type \`/\`) |
+| Build Path | **`.`** (نقطة واحدة — ماشي `/` و ماشي فارغ) |
 | Dockerfile | \`Dockerfile\` |
 | Proxy port | **${port}** |
 
@@ -78,7 +78,7 @@ EOF
 EasyPanel deploy branch — API/Store at repo root.
 
 - Branch: \`${branch}\`
-- Build Path: *(empty)*
+- Build Path: \`.\`
 - Port: ${port}
 
 See \`EASYPANEL.md\`.
@@ -100,7 +100,7 @@ EOF
   git add -A
   git commit -m "deploy(${branch}): sync from main ${MAIN_SHA:0:7}
 
-Complete ${service} at repo root — EasyPanel: empty Build Path, port ${port}."
+Complete ${service} at repo root — EasyPanel: Build Path \`.\`, port ${port}."
   echo "✓ ${branch} — $(git ls-files | wc -l) files @ $(git rev-parse --short HEAD)"
 }
 
