@@ -17,11 +17,20 @@ ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build && test -d .next
 
 FROM base AS runner
+ARG NEXT_PUBLIC_API_URL=https://api.larabeauty.store
+ARG GOOGLE_SHEETS_WEBHOOK_URL
+ARG SHEETS_WEBHOOK_SECRET
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV API_URL=https://api.larabeauty.store
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV GOOGLE_SHEETS_WEBHOOK_URL=$GOOGLE_SHEETS_WEBHOOK_URL
+ENV SHEETS_WEBHOOK_SECRET=$SHEETS_WEBHOOK_SECRET
+ENV ORDERS_DATA_DIR=/app/data
 WORKDIR /app
+
+RUN mkdir -p /app/data
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force

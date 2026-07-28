@@ -7,8 +7,8 @@ import { getProductBySlug, products } from '@/config/products';
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
-import { isValidMarketPhone } from '@/lib/phone';
-import { ordersEndpoint } from '@/lib/api';
+import { isValidMarketPhone, normalizePhone, uaePhoneErrorMessage } from '@/lib/phone';
+import { orderCurrency, submitOrder } from '@/lib/submit-order';
 
 const { market, delivery } = businessConfig;
 
@@ -46,7 +46,7 @@ export function CheckoutModal() {
       return;
     }
     if (!isValidMarketPhone(phone)) {
-      setError(`رقم جوال إماراتي غير صحيح — مثال: ${market.phoneExample}`);
+      setError(uaePhoneErrorMessage(phone) || `رقم جوال إماراتي غير صحيح — مثال: ${market.phoneExample}`);
       return;
     }
     if (!emirate) {
@@ -58,45 +58,33 @@ export function CheckoutModal() {
 
     setLoading(true);
     try {
-      const orderPayload = {
+      const phoneE164 = normalizePhone(phone);
+      if (!phoneE164) {
+        setError(uaePhoneErrorMessage(phone));
+        return;
+      }
+
+      const { orderId, orderIds } = await submitOrder({
         customerName: name.trim(),
-        phoneAsEntered: phone.trim(),
-        phone: phone.replace(/\D/g, ''),
+        phone: phone.trim(),
         area: area.trim(),
-        items: items.map((i) => ({
-          productId: i.productId,
-          sku: i.sku,
-          name: i.name,
-          bundleId: i.offerId,
-          unitPrice: i.price,
-          quantity: i.offerQuantity * i.qty,
-        })),
         sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
-        eventId: `purchase_${Date.now()}`,
-        currency: market.currency,
-      };
-
-      const res = await fetch(ordersEndpoint(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
+        items: items.map((i) => ({
+          sku: i.sku,
+          name: i.offerLabel,
+          slug: i.slug,
+          quantity: i.offerQuantity * i.qty,
+          lineTotal: i.price * i.qty,
+        })),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.message || data.error || 'order_failed');
-      }
-
-      const orderId = data.orderNumber || data.orderId;
-      if (!orderId || !String(orderId).startsWith('LARA-')) {
-        throw new Error('order_failed');
-      }
 
       sessionStorage.setItem(
         'lara-last-order',
         JSON.stringify({
           orderId,
+          orderIds,
           customerName: name.trim(),
-          phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
+          phone: phoneE164,
           area: area.trim(),
           items: items.map((i) => ({
             label: i.offerLabel,
@@ -104,7 +92,7 @@ export function CheckoutModal() {
             price: i.price * i.qty,
           })),
           total,
-          currency: market.currency,
+          currency: orderCurrency,
         }),
       );
 
@@ -130,8 +118,8 @@ export function CheckoutModal() {
       const message = err instanceof Error ? err.message : '';
       if (message === 'invalid_phone' || message.includes('جوال')) {
         setError(message);
-      } else if (message === 'order_failed') {
-        setError('ما قدرنا نسجّل الطلب — حاولي مرة ثانية');
+      } else if (message === 'order_failed' || message === 'sheet_sync_failed') {
+        setError('ما قدرنا نسجّل الطلب ف الشيت — تأكدي من رقم الجوال (يبدأ بـ 5) وحاولي مرة ثانية');
       } else if (message) {
         setError(message);
       } else {
