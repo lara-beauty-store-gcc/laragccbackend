@@ -1,7 +1,7 @@
 import { businessConfig } from '@/config/business';
 
-/** UAE mobile: 9 digits starting with 5 (same rule as api.larabeauty.store). */
-const AE = /^(?:\+?971)?0?(5\d{8})$/;
+/** UAE: any 9 national digits — same rule as api.larabeauty.store (backend 65f29e2). */
+const AE_NINE = /^(?:\+?971)?0?(\d{9})$/;
 
 export const UAE_PHONE_DIGITS = 9;
 export const UAE_PHONE_EXAMPLE = '501234567';
@@ -11,7 +11,7 @@ function cleanPhone(input: string) {
 }
 
 export function parseUaePhoneDigits(input: string): string | null {
-  const m = cleanPhone(input).match(AE);
+  const m = cleanPhone(input).match(AE_NINE);
   return m ? m[1] : null;
 }
 
@@ -37,10 +37,10 @@ export function uaePhoneErrorMessage(input: string): string {
   if (digits.length < UAE_PHONE_DIGITS) {
     return `رقم الجوال ناقص — لازم ${UAE_PHONE_DIGITS} أرقام`;
   }
-  if (!digits.startsWith('5')) {
-    return 'رقم الجوال الإماراتي لازم يبدأ بـ 5 — مثال: 501234567';
+  if (digits.length > UAE_PHONE_DIGITS) {
+    return `رقم الجوال طويل بزاف — لازم ${UAE_PHONE_DIGITS} أرقام`;
   }
-  return `رقم الجوال لازم يكون ${UAE_PHONE_DIGITS} أرقام`;
+  return '';
 }
 
 /** Store + API helpers */

@@ -67,6 +67,7 @@ export function CheckoutModal() {
       const { orderId, orderIds } = await submitOrder({
         customerName: name.trim(),
         phone: phone.trim(),
+        phoneAsEntered: phone.trim(),
         area: area.trim(),
         sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
         items: items.map((i) => ({

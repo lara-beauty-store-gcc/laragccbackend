@@ -51,11 +51,11 @@ function sheetPhone(payload: SheetsOrderPayload) {
   if (national.startsWith('971')) national = national.slice(3);
   if (national.startsWith('0')) national = national.slice(1);
 
-  if (/^5\d{8}$/.test(national)) return `+971${national}`;
+  if (/^\d{9}$/.test(national)) return `+971${national}`;
   if (digits.startsWith('971')) return `+${digits}`;
   if (raw.startsWith('+')) return `+${digits}`;
 
-  return `+971${national}`;
+  return national ? `+971${national}` : '';
 }
 
 /** Google Apps Script 302 — must not follow POST as GET. */
