@@ -77,7 +77,7 @@ describe('buildSheetBody', () => {
     assert.equal(body['order id'], 'LARA-TEST123');
     assert.equal(body.country, 'AE');
     assert.equal(body.name, 'Sara');
-    assert.equal(body.phone, '+971501234567');
+    assert.equal(body.phone, '971501234567');
     assert.equal(body.product, 'Magnesium Glycinate Gummies x2');
     assert.equal(body.url, 'https://larabeauty.store/products/magnesium-sleep');
     assert.equal(body.sku, 'LARA-MG-01');
@@ -94,6 +94,25 @@ describe('buildSheetBody', () => {
     }
   });
 
+  it('uses bundle pack size when legacy quantity is 1 for a two-pack', () => {
+    assert.equal(lineQuantity({ bundleId: 'b2', quantity: 1 }), 2);
+    assert.equal(lineQuantity({ bundleId: 'two', quantity: 1 }), 2);
+  });
+
+  it('keeps customer phone as entered without forcing +971', () => {
+    const body = buildSheetBody('Purchase', {
+      order_number: 'LARA-PHONE',
+      customer_name: 'Sara',
+      phone_raw: '0501234567',
+      phone_e164: '+971501234567',
+      total_aed: 239,
+      product: 'Magnesium Glycinate Gummies x2',
+      quantite: 2,
+    });
+    assert.equal(body.name, 'Sara');
+    assert.equal(body.phone, '0501234567');
+  });
+
   it('never includes items array in webhook payload', () => {
     const body = buildSheetBody('Purchase', {
       order_number: 'LARA-NOITEMS',
@@ -108,6 +127,8 @@ describe('buildSheetBody', () => {
     assert.equal(body['order id'], 'LARA-NOITEMS');
     assert.equal(body.totalprice, 239);
   });
+
+  it('never forwards arrays in product or sku fields', () => {
     const body = buildSheetBody('Purchase', {
       order_number: 'LARA-ARR',
       customer_name: 'Nora',
@@ -121,6 +142,26 @@ describe('buildSheetBody', () => {
     assert.equal(typeof body.product, 'string');
     assert.equal(typeof body.sku, 'string');
     assert.equal(body.product.includes('java.lang.Object'), false);
+  });
+
+  it('resolves quantite=2 for two-pack bundle with quantity 1', () => {
+    const body = buildSheetBody('Purchase', {
+      order_number: 'LARA-QTY',
+      customer_name: 'Sara',
+      phone_raw: '501234567',
+      total_aed: 239,
+      items: [
+        {
+          sku: 'LARA-MG-01',
+          productName: 'Magnesium Glycinate Gummies',
+          bundleId: 'b2',
+          quantity: 1,
+          unitPrice: 239,
+        },
+      ],
+    });
+    assert.equal(body.quantite, 2);
+    assert.equal(body.product, 'Magnesium Glycinate Gummies x2');
   });
 });
 

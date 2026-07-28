@@ -15,6 +15,27 @@ const SKU_PRODUCT_NAMES = {
 
 const JAVA_OBJECT_REF = /^\[L[a-zA-Z0-9./]+;@[0-9a-f]+$/i;
 
+const BUNDLE_PACK = { b1: 1, b2: 2, b3: 3, UPSELL: 1, one: 1, two: 2, three: 3 };
+
+function normalizeBundleId(bundleId) {
+  const aliases = { one: 'b1', two: 'b2', three: 'b3' };
+  const key = String(bundleId || 'b1').toLowerCase();
+  return aliases[key] || key;
+}
+
+/** Phone exactly as customer typed — no forced +971 prefix in the sheet. */
+export function formatSheetPhone(payload = {}) {
+  const entered = serializeSheetValue(payload.phone_raw ?? payload.phone_as_entered ?? '');
+  if (entered) return entered;
+
+  const digits = serializeSheetValue(payload.phone ?? '');
+  if (digits) return digits;
+
+  const e164 = serializeSheetValue(payload.phone_e164 ?? '');
+  if (e164.startsWith('+')) return e164.slice(1);
+  return e164;
+}
+
 function countryFromPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
   if (digits.startsWith('971')) return 'AE';
@@ -99,9 +120,13 @@ function resolveLineProductName(item) {
 }
 
 export function lineQuantity(item) {
-  const qty = Number(item.quantity ?? item.qty ?? item.quantite);
-  if (Number.isFinite(qty) && qty > 0) return Math.round(qty);
-  return 1;
+  const bundle = normalizeBundleId(item.bundleId);
+  const pack = BUNDLE_PACK[bundle] ?? 1;
+  const raw = Number(item.quantity ?? item.qty ?? item.quantite);
+  if (!Number.isFinite(raw) || raw <= 0) return pack > 1 ? pack : 1;
+  if (raw === 1 && pack > 1) return pack;
+  if (raw >= pack) return Math.round(raw);
+  return Math.round(raw * pack);
 }
 
 /** Format one line: "Product Name" or "Product Name x2". */
@@ -162,7 +187,7 @@ export function buildSheetBody(eventName, payload = {}) {
   const orderId = serializeSheetValue(
     payload['order id'] ?? payload.order_id ?? payload.order_number ?? payload.orderId,
   );
-  const phone = serializeSheetValue(payload.phone_e164 ?? payload.phone);
+  const phone = formatSheetPhone(payload);
   const currency = serializeSheetValue(payload.currency || 'AED') || 'AED';
   const now = serializeSheetValue(payload.date) || formatSheetDate();
 

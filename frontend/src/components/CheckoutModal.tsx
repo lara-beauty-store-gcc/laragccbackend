@@ -60,6 +60,7 @@ export function CheckoutModal() {
     try {
       const orderPayload = {
         customerName: name.trim(),
+        phoneAsEntered: phone.trim(),
         phone: phone.replace(/\D/g, ''),
         area: area.trim(),
         items: items.map((i) => ({

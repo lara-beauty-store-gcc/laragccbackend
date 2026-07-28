@@ -17,6 +17,27 @@ const PRICES_AED = {
   UPSELL: 49,
 };
 
+/** Units per bundle offer (one=1 box, two=2 boxes, three=3 boxes). */
+const BUNDLE_PACK = { b1: 1, b2: 2, b3: 3, UPSELL: 1 };
+
+function resolveBundleCount(item) {
+  const pack = BUNDLE_PACK[normalizeBundleId(item.bundleId)] ?? 1;
+  const raw = Number(item.quantity) || 1;
+  if (raw <= 1) return 1;
+  if (raw === pack) return 1;
+  if (raw > pack && raw % pack === 0) return raw / pack;
+  return raw;
+}
+
+/** Total physical units for sheets — e.g. "two" bundle → 2 even if quantity field is 1. */
+function resolveUnitCount(item) {
+  const pack = BUNDLE_PACK[normalizeBundleId(item.bundleId)] ?? 1;
+  const raw = Number(item.quantity) || 1;
+  if (raw === 1 && pack > 1) return pack;
+  if (raw >= pack) return Math.round(raw);
+  return Math.round(raw * pack);
+}
+
 /** Frontend sends offer ids one|two|three; legacy clients may send b1|b2|b3 */
 const BUNDLE_ALIASES = {
   one: 'b1',
@@ -51,8 +72,7 @@ function calcTotal(items, upsell) {
   let total = 0;
   for (const item of items) {
     const unit = lineUnitPrice(item);
-    const qty = Number(item.quantity) || 1;
-    total += unit * qty;
+    total += unit * resolveBundleCount(item);
   }
   if (upsell?.accepted) {
     total += PRICES_AED.UPSELL;
@@ -64,13 +84,15 @@ router.post('/', async (req, res) => {
   try {
     const body = req.body || {};
     const name = String(body.customerName || body.name || '').trim();
-    const phoneRaw = body.phone || body.phoneNumber || '';
-    const phoneE164 = normalizeGccPhone(phoneRaw);
+    const phoneAsEntered = String(
+      body.phoneAsEntered || body.phone || body.phoneNumber || '',
+    ).trim();
+    const phoneE164 = normalizeGccPhone(phoneAsEntered);
 
     if (!name || name.length < 2) {
       return res.status(400).json({ error: 'invalid_name' });
     }
-    if (!isValidGccPhone(phoneRaw)) {
+    if (!isValidGccPhone(phoneAsEntered)) {
       return res.status(400).json({
         error: 'invalid_phone',
         message: 'رقم جوال إماراتي غير صحيح — مثال: 501234567',
@@ -108,16 +130,17 @@ router.post('/', async (req, res) => {
     const dbItems = items.map((i) => {
       const bundle = normalizeBundleId(i.bundleId);
       const unit = lineUnitPrice(i);
-      const qty = Number(i.quantity) || 1;
+      const bundles = resolveBundleCount(i);
+      const units = resolveUnitCount(i);
       const productName = String(i.name || i.productName || '').trim();
       return {
         productId: i.productId || i.id,
         sku: String(i.sku || '').trim(),
         productName: productName || String(i.sku || '').trim(),
         bundleId: bundle,
-        quantity: qty,
+        quantity: units,
         unitPrice: unit,
-        lineTotal: unit * qty,
+        lineTotal: unit * bundles,
       };
     });
 
@@ -159,6 +182,8 @@ router.post('/', async (req, res) => {
         order_number: orderNumber,
         order_id: orderNumber,
         customer_name: name,
+        phone_raw: phoneAsEntered,
+        phone: phoneAsEntered.replace(/[\s\-()]/g, ''),
         phone_e164: phoneE164,
         country: 'AE',
         area_notes: order.areaNotes,
