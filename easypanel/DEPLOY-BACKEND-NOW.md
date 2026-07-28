@@ -2,7 +2,10 @@
 
 ## إلا EasyPanel يقول: *"This has to be a valid branch"*
 
-**ما تستعملش `/` فـ Build Path.** خَلّيه **فارغ** (empty).
+1. **Build Path = `/` غلط** — خَلّيه **فارغ** (امسح `/` كامل)
+2. **Reconnect GitHub** فـ EasyPanel → Settings → Git
+3. دابا فرع `backend` عندو **history عادي** (ماشي orphan) — جرّب Deploy من جديد
+4. إلا باقي: استعمل **الحل 1** (`main` + Build Path `backend`)
 
 ---
 

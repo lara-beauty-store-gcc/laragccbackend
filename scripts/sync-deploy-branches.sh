@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Sync main → deploy branches `frontend` & `backend` (full app at repo root for EasyPanel).
+# Branches are NON-orphan (normal git history) so EasyPanel accepts them as valid branches.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -45,14 +46,14 @@ build_branch() {
 
   if [ "$branch" = "frontend" ]; then
     verify_frontend "${stage}"
-    sed -i 's|Source path MUST be "frontend"|Deploy branch `frontend` — leave Source path EMPTY, port 3000|g' "${stage}/Dockerfile" 2>/dev/null || true
+    sed -i 's|Source path MUST be "frontend"|Deploy branch `frontend` — Build Path EMPTY (not /), port 3000|g' "${stage}/Dockerfile" 2>/dev/null || true
     sed -i 's|Build: frontend/|Deploy branch `frontend`|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
-    sed -i 's|Source path MUST be: frontend|Git branch `frontend`, empty Source path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
+    sed -i 's|Source path MUST be: frontend|Git branch `frontend`, empty Build Path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
   else
     verify_backend "${stage}"
-    sed -i 's|Source path MUST be "backend"|Deploy branch `backend` — leave Source path EMPTY, port 8000|g' "${stage}/Dockerfile" 2>/dev/null || true
+    sed -i 's|Source path MUST be "backend"|Deploy branch `backend` — Build Path EMPTY (not /), port 8000|g' "${stage}/Dockerfile" 2>/dev/null || true
     sed -i 's|Build: backend/|Deploy branch `backend`|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
-    sed -i 's|Source path MUST be: backend|Git branch `backend`, empty Source path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
+    sed -i 's|Source path MUST be: backend|Git branch `backend`, empty Build Path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
   fi
 
   cat > "${stage}/EASYPANEL.md" <<EOF
@@ -62,15 +63,32 @@ build_branch() {
 |---------|--------|
 | Repository | \`lara-beauty-store-gcc/laragccbackend\` |
 | Branch | \`${branch}\` |
-| Source path | *(leave empty)* |
+| Build Path | **leave empty** (do NOT type \`/\`) |
 | Dockerfile | \`Dockerfile\` |
 | Proxy port | **${port}** |
 
 Synced from \`main\` @ \`${MAIN_SHA}\` (folder \`${src}/\` on main).
+
+Alternative: branch \`main\` + Build Path \`${src}\`.
 EOF
 
+  cat > "${stage}/README.md" <<EOF
+# ${service}
+
+EasyPanel deploy branch — API/Store at repo root.
+
+- Branch: \`${branch}\`
+- Build Path: *(empty)*
+- Port: ${port}
+
+See \`EASYPANEL.md\`.
+EOF
+
+  # Non-orphan branch (EasyPanel validates branches with normal git history)
+  git checkout main
   git branch -D "${branch}" 2>/dev/null || true
-  git checkout --orphan "${branch}"
+  git checkout -b "${branch}"
+
   git rm -rf . 2>/dev/null || true
   git clean -fdx
 
@@ -82,7 +100,7 @@ EOF
   git add -A
   git commit -m "deploy(${branch}): sync from main ${MAIN_SHA:0:7}
 
-Complete ${service} at repo root — EasyPanel: empty source path, port ${port}."
+Complete ${service} at repo root — EasyPanel: empty Build Path, port ${port}."
   echo "✓ ${branch} — $(git ls-files | wc -l) files @ $(git rev-parse --short HEAD)"
 }
 

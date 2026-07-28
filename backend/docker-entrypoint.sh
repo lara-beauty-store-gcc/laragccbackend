@@ -3,7 +3,8 @@ set -e
 
 echo "========================================"
 echo " Lara Beauty API — container start"
-echo " Build: backend/ | Port: ${PORT:-8000}"
+echo " Branch: backend (or main + Build Path backend)"
+echo " Build Path in EasyPanel: EMPTY — not /"
 echo "========================================"
 echo "NODE_ENV=${NODE_ENV:-unset}"
 echo "PORT=${PORT:-unset}"
@@ -14,8 +15,8 @@ echo "Files: src/index.js=$(test -f src/index.js && echo yes || echo NO)"
 
 if [ ! -f "src/index.js" ]; then
   echo "[FATAL] src/index.js missing"
-  echo "EasyPanel → API → Source path MUST be: backend"
-  echo "Dockerfile file MUST be: Dockerfile (not backend/Dockerfile)"
+  echo "EasyPanel → Branch backend → Build Path EMPTY (not /)"
+  echo "Or: Branch main → Build Path backend"
   exit 1
 fi
 
