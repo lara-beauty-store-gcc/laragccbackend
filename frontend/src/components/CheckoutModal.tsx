@@ -8,6 +8,7 @@ import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
 import { isValidMarketPhone } from '@/lib/phone';
+import { ordersEndpoint } from '@/lib/api';
 
 const { market, delivery } = businessConfig;
 
@@ -57,55 +58,54 @@ export function CheckoutModal() {
 
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const payload = {
-        eventName: 'Purchase',
+      const orderPayload = {
         customerName: name.trim(),
-        phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
+        phone: phone.replace(/\D/g, ''),
         area: area.trim(),
         items: items.map((i) => ({
+          productId: i.productId,
           sku: i.sku,
           name: i.name,
-          qty: i.qty,
-          price: i.price,
-          offerId: i.offerId,
+          bundleId: i.offerId,
+          unitPrice: i.price,
+          quantity: i.offerQuantity * i.qty,
         })),
-        total,
+        sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+        eventId: `purchase_${Date.now()}`,
         currency: market.currency,
-        paymentMethod: 'COD',
       };
 
-      let orderId = `LARA-${Date.now()}`;
-
-      if (apiUrl) {
-        const res = await fetch(`${apiUrl}/api/v1/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customerName: name.trim(),
-            phone: phone.replace(/\D/g, ''),
-            area: area.trim(),
-            items: items.map((i) => ({
-              productId: i.productId,
-              sku: i.sku,
-              name: i.name,
-              bundleId: i.offerId,
-              unitPrice: i.price,
-              quantity: i.offerQuantity * i.qty,
-            })),
-            sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
-            eventId: `purchase_${Date.now()}`,
-            currency: market.currency,
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.message || data.error || 'order_failed');
-        }
-        orderId = data.orderNumber || data.orderId || orderId;
+      const res = await fetch(ordersEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'order_failed');
       }
 
-      sessionStorage.setItem('lara-last-order', JSON.stringify({ ...payload, orderId }));
+      const orderId = data.orderNumber || data.orderId;
+      if (!orderId) {
+        throw new Error('order_failed');
+      }
+
+      sessionStorage.setItem(
+        'lara-last-order',
+        JSON.stringify({
+          orderId,
+          customerName: name.trim(),
+          phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
+          area: area.trim(),
+          items: items.map((i) => ({
+            label: i.offerLabel,
+            qty: i.qty,
+            price: i.price * i.qty,
+          })),
+          total,
+          currency: market.currency,
+        }),
+      );
 
       const firstSlug = items[0]?.slug;
       const prod = firstSlug ? getProductBySlug(firstSlug) : products[0];

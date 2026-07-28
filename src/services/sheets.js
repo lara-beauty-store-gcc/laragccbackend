@@ -259,6 +259,10 @@ export async function postToAppsScript(url, body) {
 }
 
 export async function forwardToGoogleSheets(eventName, payload) {
+  if (eventName !== 'Purchase') {
+    return { ok: true, skipped: true, reason: 'sheets_purchase_only' };
+  }
+
   if (!config.sheetsWebhookUrl) {
     return { ok: true, skipped: true, reason: 'sheets_not_configured' };
   }

@@ -8,6 +8,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 FROM base AS builder
+ARG NEXT_PUBLIC_API_URL=https://api.larabeauty.store
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -18,6 +20,7 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV API_URL=https://api.larabeauty.store
 WORKDIR /app
 
 COPY package.json package-lock.json ./
