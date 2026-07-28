@@ -1,27 +1,48 @@
-# EasyPanel API service when Source path is EMPTY (repo root).
-# Preferred: Source path = backend → uses backend/Dockerfile instead.
-#
-# Service folder name "backend" in EasyPanel is NOT the git subdirectory.
-
-FROM node:20-alpine
+# Lara Beauty Store — EasyPanel: branch main, source path frontend
+FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
-COPY backend/package.json backend/package-lock.json ./
-RUN echo ">>> [api] npm ci --omit=dev (monorepo root build)" && \
-    npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+FROM base AS deps
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
-COPY backend/src ./src
-COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
-    test -f src/index.js || (echo "[FATAL] backend/src missing — wrong git branch?" && exit 1)
+FROM base AS builder
+ARG NEXT_PUBLIC_API_URL=https://api.larabeauty.store
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--max-old-space-size=2048
+RUN npm run build && test -d .next
 
+FROM base AS runner
+ARG NEXT_PUBLIC_API_URL=https://api.larabeauty.store
+ARG GOOGLE_SHEETS_WEBHOOK_URL
+ARG SHEETS_WEBHOOK_SECRET
 ENV NODE_ENV=production
-ENV PORT=8000
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+ENV API_URL=https://api.larabeauty.store
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV GOOGLE_SHEETS_WEBHOOK_URL=$GOOGLE_SHEETS_WEBHOOK_URL
+ENV SHEETS_WEBHOOK_SECRET=$SHEETS_WEBHOOK_SECRET
+ENV ORDERS_DATA_DIR=/app/data
+WORKDIR /app
 
-EXPOSE 8000
+RUN mkdir -p /app/data
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -fsS "http://127.0.0.1:8000/health" >/dev/null || exit 1
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+  CMD curl -fsS "http://127.0.0.1:3000/api/health" || exit 1
 
 ENTRYPOINT ["docker-entrypoint.sh"]
