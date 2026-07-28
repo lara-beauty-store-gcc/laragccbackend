@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Sync main → deploy branches `frontend` & `backend`.
-# Each deploy branch keeps code under frontend/ or backend/ so EasyPanel
-# Build Path validation passes (branch backend + path backend).
+# API/Store files at REPO ROOT on each branch (EasyPanel: branch backend, Build Path /).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -41,15 +40,14 @@ build_branch() {
   local stage
   stage="$(mktemp -d)"
 
-  mkdir -p "${stage}/${src}"
-  cp -a "${ROOT}/${src}/." "${stage}/${src}/"
-  rm -rf "${stage}/${src}/node_modules" "${stage}/${src}/.next" 2>/dev/null || true
-  rm -f "${stage}/${src}/Dockerfile.standalone" "${stage}/${src}/public/index.html" 2>/dev/null || true
+  cp -a "${ROOT}/${src}/." "${stage}/"
+  rm -rf "${stage}/node_modules" "${stage}/.next" 2>/dev/null || true
+  rm -f "${stage}/Dockerfile.standalone" "${stage}/public/index.html" 2>/dev/null || true
 
   if [ "$branch" = "frontend" ]; then
-    verify_frontend "${stage}/${src}"
+    verify_frontend "${stage}"
   else
-    verify_backend "${stage}/${src}"
+    verify_backend "${stage}"
   fi
 
   cat > "${stage}/EASYPANEL.md" <<EOF
@@ -59,22 +57,18 @@ build_branch() {
 |---------|--------|
 | Repository | \`lara-beauty-store-gcc/laragccbackend\` |
 | Branch | \`${branch}\` |
-| Build Path | \`${src}\` |
+| Build Path | \`/\` (repo root — Dockerfile at root) |
 | Dockerfile | \`Dockerfile\` |
 | Proxy port | **${port}** |
 
-Synced from \`main\` @ \`${MAIN_SHA}\`.
-
-Same settings work on branch \`main\` with Build Path \`${src}\`.
+Synced from \`main\` @ \`${MAIN_SHA}\` (folder \`${src}/\` on main).
 EOF
 
   cat > "${stage}/README.md" <<EOF
 # ${service}
 
-EasyPanel deploy branch.
-
 - Branch: \`${branch}\`
-- Build Path: \`${src}\`
+- Build Path: \`/\`
 - Port: ${port}
 EOF
 
@@ -90,11 +84,13 @@ EOF
   shopt -u dotglob
   rm -rf "${stage}"
 
+  test -f Dockerfile || { echo "[FATAL] Dockerfile missing at branch root"; exit 1; }
+
   git add -A
   git commit -m "deploy(${branch}): sync from main ${MAIN_SHA:0:7}
 
-${service} under ${src}/ — EasyPanel: branch ${branch}, Build Path ${src}, port ${port}."
-  echo "✓ ${branch} — $(git ls-files | wc -l) files @ $(git rev-parse --short HEAD)"
+${service} at repo root — EasyPanel: branch ${branch}, Build Path /, port ${port}."
+  echo "✓ ${branch} — Dockerfile at root, $(git ls-files | wc -l) files @ $(git rev-parse --short HEAD)"
 }
 
 build_branch "frontend" "frontend" "3000" "Lara Beauty Store (Next.js)"

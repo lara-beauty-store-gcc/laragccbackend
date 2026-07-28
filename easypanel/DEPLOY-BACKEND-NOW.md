@@ -1,18 +1,16 @@
 # EasyPanel — Backend API
 
-## الإعداد (نفس الشي على branch `backend` أو `main`)
+## إعدادك (ما تبدّلوش)
 
 | الحقل | القيمة |
 |--------|--------|
 | Repository | `lara-beauty-store-gcc/laragccbackend` |
 | Branch | `backend` |
-| Build Path | `backend` |
+| Build Path | `/` |
 | Dockerfile | `Dockerfile` |
 | Port | `8000` |
 
-**ما تستعملش `/` ولا `.` ولا فارغ** — كتب `backend` فـ Build Path.
-
-نفس الإعداد يخدم مع Branch `main` + Build Path `backend`.
+فرع `backend` فيه `Dockerfile` فـ **جذر الفرع** (ماشي داخل folder backend/).
 
 ## Test
 
