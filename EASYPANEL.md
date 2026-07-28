@@ -33,6 +33,20 @@ curl https://api.larabeauty.store/health
 
 Expected: `"status":"ok"` and `"sheets":true`
 
+## Duplicate rows (order twice in sheet)
+
+The **Store** already sends orders to Google Sheets. If the **API** also writes, you get **2 rows**.
+
+This API build **skips** sheet writes when `sourceUrl` is `larabeauty.store` (automatic).
+
+Optional env override:
+
+```
+SHEETS_SINGLE_WRITER=store
+```
+
+Also update **Apps Script** in Google Sheet (paste `ORDERS_WEBHOOK.gs` → Deploy) to block near-duplicates.
+
 ## If build fails
 
 1. Branch must be **`backend`** (not `main` or `frontend`)

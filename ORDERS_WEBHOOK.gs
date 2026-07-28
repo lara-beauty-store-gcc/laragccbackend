@@ -11,8 +11,7 @@
  */
 
 const SCRIPT_SECRET = 'lara-beauty-secret-2026';
-/** من URL ديال الشيت: docs.google.com/spreadsheets/d/هاد_الجزء/edit */
-const SPREADSHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
+const SPREADSHEET_ID = '1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU';
 const SHEET_NAME = 'Tabellenblatt1';
 
 const HEADERS = [
@@ -46,7 +45,6 @@ function cell(value) {
     return String(value);
   }
 
-  // Reject arrays/objects — backend must send flat strings
   return '';
 }
 
@@ -54,6 +52,20 @@ function cellNumber(value) {
   var n = Number(value);
   if (!isFinite(n) || n < 0) return 0;
   return n;
+}
+
+/**
+ * Full customer name — customer_name BEFORE name.
+ * Old store payloads sometimes put a product/short token in `name`.
+ */
+function resolveCustomerName(body) {
+  return cell(
+    body.customer_name ||
+      body.customerName ||
+      body.full_name ||
+      body.fullName ||
+      body.name,
+  );
 }
 
 /** Always +971XXXXXXXXX in sheet column phone */
@@ -66,15 +78,110 @@ function formatPhoneUae(value) {
   if (national.indexOf('971') === 0) national = national.substring(3);
   if (national.indexOf('0') === 0) national = national.substring(1);
 
-  if (/^5\d{8}$/.test(national)) return '+971' + national;
-  if (digits.indexOf('971') === 0) return '+' + digits;
-  if (raw.indexOf('+') === 0) return '+' + digits;
+  var formatted = '';
+  if (/^5\d{8}$/.test(national)) formatted = '+971' + national;
+  else if (digits.indexOf('971') === 0) formatted = '+' + digits;
+  else if (raw.indexOf('+') === 0) formatted = '+' + digits;
+  else formatted = national ? '+971' + national : '';
 
-  return national ? '+971' + national : '';
+  if (formatted && formatted.indexOf('+') !== 0) {
+    formatted = '+' + formatted.replace(/^\+/, '');
+  }
+  return formatted;
 }
 
-function doGet() {
-  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28' });
+/** Build flat product/qty/total from legacy items[] payloads */
+function flattenItems(body) {
+  var items = body.items || body.line_items || body.products;
+  if (!items || !items.length) return {};
+
+  var productParts = [];
+  var skuParts = [];
+  var quantite = 0;
+  var totalprice = 0;
+
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    if (!item || typeof item !== 'object') continue;
+
+    var label = cell(
+      item.product || item.productName || item.name || item.title || item.label,
+    );
+    if (label && !isJavaObjectRef(label)) {
+      var q = cellNumber(item.quantity || item.quantite) || 1;
+      productParts.push(q > 1 ? label + ' x' + q : label);
+    }
+
+    var sku = cell(item.sku);
+    if (sku) skuParts.push(sku);
+
+    quantite += cellNumber(item.quantity || item.quantite) || 1;
+    totalprice += cellNumber(
+      item.totalPrice || item.lineTotal || item.totalprice || item.price || item.lineTotalAed,
+    );
+  }
+
+  var out = {};
+  if (productParts.length) out.product = productParts.join('\n');
+  if (skuParts.length) out.sku = skuParts.join(', ');
+  if (quantite) out.quantite = quantite;
+  if (totalprice) out.totalprice = totalprice;
+  return out;
+}
+
+/** Always yyyy-MM-dd HH:mm in Asia/Dubai — never raw ISO in the sheet. */
+function normalizeSheetDate(value) {
+  var raw = cell(value);
+  if (raw && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  var d = raw ? new Date(raw) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+
+  return Utilities.formatDate(d, 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
+}
+
+function resolveOrderId(body) {
+  var ids = body.order_ids || body.orderIds;
+  if (ids && ids.length) {
+    var first = cell(ids[0]);
+    if (first) return first;
+  }
+  return cell(body['order id'] || body.order_id || body.order_number || body.orderId);
+}
+
+function clearAllOrders_() {
+  var ss = getSpreadsheet_();
+  if (!ss) {
+    return jsonResponse({ ok: false, error: 'spreadsheet_not_linked' }, 500);
+  }
+
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) {
+    return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
+  }
+
+  var last = sheet.getLastRow();
+  var cleared = 0;
+  if (last > 1) {
+    cleared = last - 1;
+    sheet.deleteRows(2, cleared);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+  }
+
+  return jsonResponse({ ok: true, success: true, cleared: cleared, sheet: sheet.getName() });
+}
+
+function doGet(e) {
+  var params = (e && e.parameter) || {};
+  if (params.action === 'clear_orders' && params.secret === SCRIPT_SECRET) {
+    return clearAllOrders_();
+  }
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v4' });
 }
 
 function doPost(e) {
@@ -89,26 +196,42 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
-    // Flat fields only — ignore body.items completely
-    var orderId = cell(body['order id'] || body.order_id || body.order_number);
-    var name = cell(body.name || body.customer_name);
-    var phone = formatPhoneUae(body.phone || body.phone_e164);
-    var product = cell(body.product);
-    var url = cell(body.url || body.source_url);
-    var sku = cell(body.sku);
+    if (body.action === 'clear_orders' || body.action === 'clear_all') {
+      return clearAllOrders_();
+    }
+
+    var fromItems = flattenItems(body);
+
+    var orderId = resolveOrderId(body);
+    var name = resolveCustomerName(body);
+    var phone = formatPhoneUae(
+      body.phone || body.phone_e164 || body.phoneE164 || body.phone_raw,
+    );
+    var product = cell(body.product) || fromItems.product || '';
+    var url = cell(body.url || body.source_url || body.sourceUrl);
+    var sku = cell(body.sku) || fromItems.sku || '';
     var country = cell(body.country) || 'AE';
     var currency = cell(body.currency) || 'AED';
-    var date =
-      cell(body.date) ||
-      Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
-    var quantite = cellNumber(body.quantite || body.quantity);
+    var date = normalizeSheetDate(body.date);
+    var quantite = cellNumber(body.quantite || body.quantity) || fromItems.quantite || 0;
     var totalprice = cellNumber(
-      body.totalprice || body['total price'] || body.total_aed || body.total_amount || body.total,
+      body.totalprice ||
+        body['total price'] ||
+        body.total_aed ||
+        body.total_amount ||
+        body.total,
     );
+    if (!totalprice && fromItems.totalprice) totalprice = fromItems.totalprice;
 
     if (!orderId || !name || !phone) {
       return jsonResponse(
-        { ok: false, error: 'incomplete_row', orderId: orderId, name: Boolean(name), phone: Boolean(phone) },
+        {
+          ok: false,
+          error: 'incomplete_row',
+          orderId: orderId,
+          name: Boolean(name),
+          phone: Boolean(phone),
+        },
         400,
       );
     }
@@ -126,7 +249,11 @@ function doPost(e) {
     var ss = getSpreadsheet_();
     if (!ss) {
       return jsonResponse(
-        { ok: false, error: 'spreadsheet_not_linked', hint: 'Set SPREADSHEET_ID or bind script via Extensions → Apps Script' },
+        {
+          ok: false,
+          error: 'spreadsheet_not_linked',
+          hint: 'Set SPREADSHEET_ID or bind script via Extensions → Apps Script',
+        },
         500,
       );
     }
@@ -140,12 +267,35 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
     }
 
-    // Skip duplicate order id
+function minutesApart_(a, b) {
+  try {
+    var da = new Date(String(a).replace(' ', 'T'));
+    var db = new Date(String(b).replace(' ', 'T'));
+    if (isNaN(da.getTime()) || isNaN(db.getTime())) return 999;
+    return Math.abs(da.getTime() - db.getTime()) / 60000;
+  } catch (e) {
+    return 999;
+  }
+}
+
+/** Block double-write: same order id, or same phone+name+total within 3 minutes. */
+function isDuplicateOrder_(data, orderId, phone, name, totalprice, date) {
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === orderId) return true;
+
+    var rowPhone = formatPhoneUae(data[i][4]);
+    var rowName = String(data[i][3] || '').trim();
+    var rowTotal = Number(data[i][9]);
+    if (rowPhone === phone && rowName === name && rowTotal === totalprice) {
+      if (minutesApart_(data[i][0], date) <= 3) return true;
+    }
+  }
+  return false;
+}
+
     var data = sheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][1]) === orderId) {
-        return jsonResponse({ ok: true, success: true, duplicate: true, order_id: orderId });
-      }
+    if (isDuplicateOrder_(data, orderId, phone, name, totalprice, date)) {
+      return jsonResponse({ ok: true, success: true, duplicate: true, order_id: orderId });
     }
 
     sheet.appendRow([

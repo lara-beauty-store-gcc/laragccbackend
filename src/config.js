@@ -64,6 +64,9 @@ export const config = {
   },
   enableIpFraudCheck: fraudCheckEnabled(),
 
+  /** store = only Store webhook writes; api = only API writes; empty = auto (skip API when source is larabeauty.store) */
+  sheetsSingleWriter: env('SHEETS_SINGLE_WRITER').toLowerCase(),
+
   whitelistedPhones: env('WHITELISTED_PHONES')
     .split(',')
     .map((p) => p.replace(/\D/g, ''))

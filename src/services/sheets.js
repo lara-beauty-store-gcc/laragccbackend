@@ -323,6 +323,17 @@ export async function postToAppsScript(url, body) {
   return { ok: true, status: init.status, data, body: text };
 }
 
+export function shouldSkipSheetsWrite(payload = {}) {
+  const mode = config.sheetsSingleWriter;
+  if (mode === 'store') return 'sheets_store_is_writer';
+  if (mode === 'api') return '';
+  const source = String(
+    payload.source_url ?? payload.sourceUrl ?? payload.url ?? '',
+  ).toLowerCase();
+  if (source.includes('larabeauty.store')) return 'sheets_store_writes_for_storefront';
+  return '';
+}
+
 export async function forwardToGoogleSheets(eventName, payload) {
   if (eventName !== 'Purchase') {
     return { ok: true, skipped: true, reason: 'sheets_purchase_only' };
@@ -330,6 +341,11 @@ export async function forwardToGoogleSheets(eventName, payload) {
 
   if (!config.sheetsWebhookUrl) {
     return { ok: true, skipped: true, reason: 'sheets_not_configured' };
+  }
+
+  const skipReason = shouldSkipSheetsWrite(payload);
+  if (skipReason) {
+    return { ok: true, skipped: true, reason: skipReason };
   }
 
   const orderId = serializeSheetValue(
