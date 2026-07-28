@@ -10,7 +10,7 @@ export function normalizeGccPhone(input) {
 
   if (digits.startsWith('971')) {
     const national = digits.slice(3).replace(/^0+/, '');
-    if (/^5[0-9]{8}$/.test(national)) return `+971${national}`;
+    if (/^[0-9]{9}$/.test(national)) return `+971${national}`;
   }
 
   if (digits.startsWith('965')) {
@@ -19,7 +19,7 @@ export function normalizeGccPhone(input) {
   }
 
   const national = digits.replace(/^0+/, '');
-  if (/^5[0-9]{8}$/.test(national)) return `+971${national}`;
+  if (/^[0-9]{9}$/.test(national)) return `+971${national}`;
   if (/^[569]\d{7}$/.test(national)) return `+965${national}`;
 
   return null;

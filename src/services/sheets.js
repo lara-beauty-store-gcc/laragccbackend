@@ -36,7 +36,7 @@ export function formatSheetPhone(payload = {}) {
   else if (national.startsWith('965')) return `+${digits}`;
   if (national.startsWith('0')) national = national.slice(1);
 
-  if (/^5\d{8}$/.test(national)) return `+971${national}`;
+  if (/^\d{9}$/.test(national)) return `+971${national}`;
   if (digits.startsWith('971')) return `+${digits}`;
   if (raw.startsWith('+')) return `+${digits}`;
 
@@ -212,6 +212,10 @@ export function buildSheetBody(eventName, payload = {}) {
   const quantite = items.length > 0 ? totalQuantity(items) : Number(payload.quantite ?? payload.quantity) || 1;
   const total = resolveTotal(payload, items);
 
+  const customerName = serializeSheetValue(
+    payload.customer_name ?? payload.customerName ?? payload.name,
+  );
+
   const body = {
     secret: config.sheetsWebhookSecret || undefined,
     event: eventName,
@@ -220,7 +224,9 @@ export function buildSheetBody(eventName, payload = {}) {
     order_id: orderId,
     order_number: orderId,
     country: serializeSheetValue(payload.country) || countryFromPhone(phone),
-    name: serializeSheetValue(payload.customer_name ?? payload.customerName ?? payload.name),
+    name: customerName,
+    customer_name: customerName,
+    customerName,
     phone,
     product,
     url: serializeSheetValue(payload.url ?? payload.source_url ?? payload.sourceUrl),
@@ -243,6 +249,8 @@ export function buildSheetBody(eventName, payload = {}) {
     'order_number',
     'country',
     'name',
+    'customer_name',
+    'customerName',
     'phone',
     'product',
     'url',

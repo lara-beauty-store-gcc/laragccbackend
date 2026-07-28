@@ -113,6 +113,31 @@ describe('buildSheetBody', () => {
     assert.equal(body.phone, '+971501234567');
   });
 
+  it('keeps full customer name with spaces', () => {
+    const body = buildSheetBody('Purchase', {
+      order_number: 'LARA-NAME',
+      customer_name: 'LISM LKAMIL',
+      phone_e164: '+971501234567',
+      total_aed: 239,
+      product: 'Epimedium Energy',
+      quantite: 1,
+    });
+    assert.equal(body.name, 'LISM LKAMIL');
+    assert.equal(body.customer_name, 'LISM LKAMIL');
+  });
+
+  it('formats non-5 UAE mobiles with +971 prefix', () => {
+    const body = buildSheetBody('Purchase', {
+      order_number: 'LARA-888',
+      customer_name: 'Test User',
+      phone_raw: '888888888',
+      total_aed: 239,
+      product: 'Epimedium Energy',
+      quantite: 1,
+    });
+    assert.equal(body.phone, '+971888888888');
+  });
+
   it('never includes items array in webhook payload', () => {
     const body = buildSheetBody('Purchase', {
       order_number: 'LARA-NOITEMS',
