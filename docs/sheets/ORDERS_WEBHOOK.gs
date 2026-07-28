@@ -11,6 +11,8 @@
  */
 
 const SCRIPT_SECRET = 'lara-beauty-secret-2026';
+/** من URL ديال الشيت: docs.google.com/spreadsheets/d/هاد_الجزء/edit */
+const SPREADSHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
 const SHEET_NAME = 'Tabellenblatt1';
 
 const HEADERS = [
@@ -104,7 +106,14 @@ function doPost(e) {
 
     if (!quantite) quantite = 1;
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = getSpreadsheet_();
+    if (!ss) {
+      return jsonResponse(
+        { ok: false, error: 'spreadsheet_not_linked', hint: 'Set SPREADSHEET_ID or bind script via Extensions → Apps Script' },
+        500,
+      );
+    }
+
     var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     if (!sheet) {
       return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
@@ -140,6 +149,18 @@ function doPost(e) {
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
+}
+
+function getSpreadsheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+
+  var id = String(SPREADSHEET_ID || '').trim();
+  if (id && id !== 'PASTE_YOUR_SHEET_ID_HERE') {
+    return SpreadsheetApp.openById(id);
+  }
+
+  return null;
 }
 
 function jsonResponse(obj, code) {

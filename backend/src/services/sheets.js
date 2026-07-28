@@ -262,9 +262,9 @@ export async function postToAppsScript(url, body) {
     } catch {
       data = null;
     }
-    const success = data?.success === true || data?.ok === true;
-    if (!success && !follow.ok) {
-      return { ok: false, status: follow.status, body: text, data };
+    const success = data?.success === true || (data?.ok === true && !data?.error);
+    if (!success) {
+      return { ok: false, status: follow.status, body: text, data, error: data?.error || 'sheets_rejected' };
     }
     return { ok: true, status: follow.status, data, body: text };
   }
@@ -276,9 +276,9 @@ export async function postToAppsScript(url, body) {
   } catch {
     data = null;
   }
-  const success = data?.success === true || data?.ok === true;
-  if (!init.ok && !success) {
-    return { ok: false, status: init.status, body: text, data };
+  const success = data?.success === true || (data?.ok === true && !data?.error);
+  if (!success) {
+    return { ok: false, status: init.status, body: text, data, error: data?.error || 'sheets_rejected' };
   }
   return { ok: true, status: init.status, data, body: text };
 }
