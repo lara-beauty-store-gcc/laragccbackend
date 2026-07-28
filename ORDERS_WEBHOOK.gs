@@ -151,8 +151,37 @@ function resolveOrderId(body) {
   return cell(body['order id'] || body.order_id || body.order_number || body.orderId);
 }
 
-function doGet() {
-  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v3' });
+function clearAllOrders_() {
+  var ss = getSpreadsheet_();
+  if (!ss) {
+    return jsonResponse({ ok: false, error: 'spreadsheet_not_linked' }, 500);
+  }
+
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) {
+    return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
+  }
+
+  var last = sheet.getLastRow();
+  var cleared = 0;
+  if (last > 1) {
+    cleared = last - 1;
+    sheet.deleteRows(2, cleared);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+  }
+
+  return jsonResponse({ ok: true, success: true, cleared: cleared, sheet: sheet.getName() });
+}
+
+function doGet(e) {
+  var params = (e && e.parameter) || {};
+  if (params.action === 'clear_orders' && params.secret === SCRIPT_SECRET) {
+    return clearAllOrders_();
+  }
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v4' });
 }
 
 function doPost(e) {
@@ -165,6 +194,10 @@ function doPost(e) {
 
     if (body.secret !== SCRIPT_SECRET) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
+    }
+
+    if (body.action === 'clear_orders' || body.action === 'clear_all') {
+      return clearAllOrders_();
     }
 
     var fromItems = flattenItems(body);
