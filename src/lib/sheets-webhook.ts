@@ -1,6 +1,7 @@
 import { businessConfig } from '@/config/business';
 import { buildSheetRows, type RawSheetItem, type SheetsOrderItem } from '@/lib/sheets-export';
 import { generateLaraOrderId } from '@/lib/order-ids';
+import { formatSheetDate } from '@/lib/sheet-date';
 
 export type { SheetsOrderItem };
 
@@ -37,13 +38,6 @@ export function sheetsWebhookConfigured() {
 
 function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
-}
-
-function formatSheetDate(date?: string) {
-  const d = date ? new Date(date) : new Date();
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function sheetPhone(payload: SheetsOrderPayload) {

@@ -129,6 +129,19 @@ function flattenItems(body) {
   return out;
 }
 
+/** Always yyyy-MM-dd HH:mm in Asia/Dubai — never raw ISO in the sheet. */
+function normalizeSheetDate(value) {
+  var raw = cell(value);
+  if (raw && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  var d = raw ? new Date(raw) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+
+  return Utilities.formatDate(d, 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
+}
+
 function resolveOrderId(body) {
   var ids = body.order_ids || body.orderIds;
   if (ids && ids.length) {
@@ -139,7 +152,7 @@ function resolveOrderId(body) {
 }
 
 function doGet() {
-  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v2' });
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28-v3' });
 }
 
 function doPost(e) {
@@ -166,9 +179,7 @@ function doPost(e) {
     var sku = cell(body.sku) || fromItems.sku || '';
     var country = cell(body.country) || 'AE';
     var currency = cell(body.currency) || 'AED';
-    var date =
-      cell(body.date) ||
-      Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
+    var date = normalizeSheetDate(body.date);
     var quantite = cellNumber(body.quantite || body.quantity) || fromItems.quantite || 0;
     var totalprice = cellNumber(
       body.totalprice ||

@@ -1,4 +1,5 @@
 import { businessConfig } from '@/config/business';
+import { formatSheetDate } from '@/lib/sheet-date';
 
 export type SheetsOrderItem = {
   product: string;
@@ -242,7 +243,7 @@ export function buildSheetRows(
     sourceUrl: ctx.sourceUrl,
   });
 
-  const date = String(ctx.date || new Date().toISOString());
+  const date = formatSheetDate(ctx.date);
   const country = String(ctx.country || 'AE').trim() || 'AE';
   const name = String(ctx.customerName || '').trim();
   const phone = String(ctx.phone || '').trim();

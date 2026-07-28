@@ -3,6 +3,7 @@ import {
   markOrdersSynced,
   type UnsyncedOrderBatch,
 } from '@/lib/order-store';
+import { formatSheetDate } from '@/lib/sheet-date';
 import { forwardOrderToSheets } from '@/lib/sheets-webhook';
 
 export async function syncUnsyncedOrdersToSheets() {
@@ -47,7 +48,7 @@ async function syncBatchToSheets(batch: UnsyncedOrderBatch) {
     sourceUrl: batch.sourceUrl,
     items: batch.items,
     orderIds: batch.orderIds,
-    date: batch.createdAt,
+    date: formatSheetDate(batch.createdAt),
   });
 
   if (result.ok) {
