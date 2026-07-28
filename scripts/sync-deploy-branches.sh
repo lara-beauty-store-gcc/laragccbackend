@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Sync main → deploy branches `frontend` & `backend` (full app at repo root for EasyPanel).
-# Branches are NON-orphan (normal git history) so EasyPanel accepts them as valid branches.
+# Sync main → deploy branches `frontend` & `backend`.
+# Each deploy branch keeps code under frontend/ or backend/ so EasyPanel
+# Build Path validation passes (branch backend + path backend).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -40,20 +41,15 @@ build_branch() {
   local stage
   stage="$(mktemp -d)"
 
-  cp -a "${ROOT}/${src}/." "${stage}/"
-  rm -rf "${stage}/node_modules" "${stage}/.next" 2>/dev/null || true
-  rm -f "${stage}/Dockerfile.standalone" "${stage}/public/index.html" 2>/dev/null || true
+  mkdir -p "${stage}/${src}"
+  cp -a "${ROOT}/${src}/." "${stage}/${src}/"
+  rm -rf "${stage}/${src}/node_modules" "${stage}/${src}/.next" 2>/dev/null || true
+  rm -f "${stage}/${src}/Dockerfile.standalone" "${stage}/${src}/public/index.html" 2>/dev/null || true
 
   if [ "$branch" = "frontend" ]; then
-    verify_frontend "${stage}"
-    sed -i 's|Source path MUST be "frontend"|Deploy branch `frontend` — Build Path EMPTY (not /), port 3000|g' "${stage}/Dockerfile" 2>/dev/null || true
-    sed -i 's|Build: frontend/|Deploy branch `frontend`|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
-    sed -i 's|Source path MUST be: frontend|Git branch `frontend`, empty Build Path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
+    verify_frontend "${stage}/${src}"
   else
-    verify_backend "${stage}"
-    sed -i 's|Source path MUST be "backend"|Deploy branch `backend` — Build Path EMPTY (not /), port 8000|g' "${stage}/Dockerfile" 2>/dev/null || true
-    sed -i 's|Build: backend/|Deploy branch `backend`|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
-    sed -i 's|Source path MUST be: backend|Git branch `backend`, empty Build Path|g' "${stage}/docker-entrypoint.sh" 2>/dev/null || true
+    verify_backend "${stage}/${src}"
   fi
 
   cat > "${stage}/EASYPANEL.md" <<EOF
@@ -63,28 +59,25 @@ build_branch() {
 |---------|--------|
 | Repository | \`lara-beauty-store-gcc/laragccbackend\` |
 | Branch | \`${branch}\` |
-| Build Path | **`.`** (نقطة واحدة — ماشي `/` و ماشي فارغ) |
+| Build Path | \`${src}\` |
 | Dockerfile | \`Dockerfile\` |
 | Proxy port | **${port}** |
 
-Synced from \`main\` @ \`${MAIN_SHA}\` (folder \`${src}/\` on main).
+Synced from \`main\` @ \`${MAIN_SHA}\`.
 
-Alternative: branch \`main\` + Build Path \`${src}\`.
+Same settings work on branch \`main\` with Build Path \`${src}\`.
 EOF
 
   cat > "${stage}/README.md" <<EOF
 # ${service}
 
-EasyPanel deploy branch — API/Store at repo root.
+EasyPanel deploy branch.
 
 - Branch: \`${branch}\`
-- Build Path: \`.\`
+- Build Path: \`${src}\`
 - Port: ${port}
-
-See \`EASYPANEL.md\`.
 EOF
 
-  # Non-orphan branch (EasyPanel validates branches with normal git history)
   git checkout main
   git branch -D "${branch}" 2>/dev/null || true
   git checkout -b "${branch}"
@@ -100,7 +93,7 @@ EOF
   git add -A
   git commit -m "deploy(${branch}): sync from main ${MAIN_SHA:0:7}
 
-Complete ${service} at repo root — EasyPanel: Build Path \`.\`, port ${port}."
+${service} under ${src}/ — EasyPanel: branch ${branch}, Build Path ${src}, port ${port}."
   echo "✓ ${branch} — $(git ls-files | wc -l) files @ $(git rev-parse --short HEAD)"
 }
 

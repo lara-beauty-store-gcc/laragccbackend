@@ -1,38 +1,18 @@
-# EasyPanel — Backend API (حل Build Path)
+# EasyPanel — Backend API
 
-EasyPanel **ما كيقبلش** Build Path فارغ ولا `/`.
-
-## ✅ الإعداد الصحيح (اختار واحد)
-
-### الطريقة 1 — الأسهل (ننصحك بها)
+## الإعداد (نفس الشي على branch `backend` أو `main`)
 
 | الحقل | القيمة |
 |--------|--------|
-| Branch | `main` |
-| Build Path | `backend` |
-| Port | `8000` |
-
-### الطريقة 2 — فرع backend
-
-| الحقل | القيمة |
-|--------|--------|
+| Repository | `lara-beauty-store-gcc/laragccbackend` |
 | Branch | `backend` |
-| Build Path | `.` |
+| Build Path | `backend` |
+| Dockerfile | `Dockerfile` |
 | Port | `8000` |
 
-**`.` = نقطة واحدة فقط** (الجذر ديال الفرع)
+**ما تستعملش `/` ولا `.` ولا فارغ** — كتب `backend` فـ Build Path.
 
----
-
-## ❌ ما تستعملش
-
-| Build Path | النتيجة |
-|------------|---------|
-| `/` | Invalid ❌ |
-| فارغ | ما كيقبلش ❌ |
-| `backend` مع branch `backend` | غلط ❌ |
-
----
+نفس الإعداد يخدم مع Branch `main` + Build Path `backend`.
 
 ## Test
 
