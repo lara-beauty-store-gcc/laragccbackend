@@ -77,7 +77,7 @@ describe('buildSheetBody', () => {
     assert.equal(body['order id'], 'LARA-TEST123');
     assert.equal(body.country, 'AE');
     assert.equal(body.name, 'Sara');
-    assert.equal(body.phone, '971501234567');
+    assert.equal(body.phone, '+971501234567');
     assert.equal(body.product, 'Magnesium Glycinate Gummies x2');
     assert.equal(body.url, 'https://larabeauty.store/products/magnesium-sleep');
     assert.equal(body.sku, 'LARA-MG-01');
@@ -99,7 +99,7 @@ describe('buildSheetBody', () => {
     assert.equal(lineQuantity({ bundleId: 'two', quantity: 1 }), 2);
   });
 
-  it('keeps customer phone as entered without forcing +971', () => {
+  it('formats phone as +971 E164 in sheet column', () => {
     const body = buildSheetBody('Purchase', {
       order_number: 'LARA-PHONE',
       customer_name: 'Sara',
@@ -110,7 +110,7 @@ describe('buildSheetBody', () => {
       quantite: 2,
     });
     assert.equal(body.name, 'Sara');
-    assert.equal(body.phone, '0501234567');
+    assert.equal(body.phone, '+971501234567');
   });
 
   it('never includes items array in webhook payload', () => {
