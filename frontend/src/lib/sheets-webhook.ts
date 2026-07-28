@@ -47,13 +47,21 @@ function formatSheetDate(date?: string) {
 }
 
 function sheetPhone(payload: SheetsOrderPayload) {
-  const entered = String(payload.phoneAsEntered || '').trim();
-  if (entered) return entered.replace(/[\s\-()]/g, '');
+  const raw = String(
+    payload.phoneAsEntered || payload.phone || '',
+  ).trim();
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
 
-  const e164 = String(payload.phone || '').trim();
-  if (e164.startsWith('+971')) return e164.slice(4);
-  if (e164.startsWith('971')) return e164.slice(3);
-  return e164.replace(/\D/g, '');
+  let national = digits;
+  if (national.startsWith('971')) national = national.slice(3);
+  if (national.startsWith('0')) national = national.slice(1);
+
+  if (/^5\d{8}$/.test(national)) return `+971${national}`;
+  if (digits.startsWith('971')) return `+${digits}`;
+  if (raw.startsWith('+')) return `+${digits}`;
+
+  return `+971${national}`;
 }
 
 /** Google Apps Script 302 — must not follow POST as GET. */

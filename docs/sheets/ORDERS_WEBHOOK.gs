@@ -56,6 +56,23 @@ function cellNumber(value) {
   return n;
 }
 
+/** Always +971XXXXXXXXX in sheet column phone */
+function formatPhoneUae(value) {
+  var raw = cell(value);
+  var digits = String(raw || '').replace(/\D/g, '');
+  if (!digits) return '';
+
+  var national = digits;
+  if (national.indexOf('971') === 0) national = national.substring(3);
+  if (national.indexOf('0') === 0) national = national.substring(1);
+
+  if (/^5\d{8}$/.test(national)) return '+971' + national;
+  if (digits.indexOf('971') === 0) return '+' + digits;
+  if (raw.indexOf('+') === 0) return '+' + digits;
+
+  return national ? '+971' + national : '';
+}
+
 function doGet() {
   return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28' });
 }
@@ -75,7 +92,7 @@ function doPost(e) {
     // Flat fields only — ignore body.items completely
     var orderId = cell(body['order id'] || body.order_id || body.order_number);
     var name = cell(body.name || body.customer_name);
-    var phone = cell(body.phone || body.phone_e164);
+    var phone = formatPhoneUae(body.phone || body.phone_e164);
     var product = cell(body.product);
     var url = cell(body.url || body.source_url);
     var sku = cell(body.sku);

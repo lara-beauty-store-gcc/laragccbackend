@@ -23,17 +23,24 @@ function normalizeBundleId(bundleId) {
   return aliases[key] || key;
 }
 
-/** Phone exactly as customer typed — no forced +971 prefix in the sheet. */
+/** Always write UAE phone as +971XXXXXXXXX in the sheet. */
 export function formatSheetPhone(payload = {}) {
-  const entered = serializeSheetValue(payload.phone_raw ?? payload.phone_as_entered ?? '');
-  if (entered) return entered;
+  const raw = serializeSheetValue(
+    payload.phone_raw ?? payload.phone_as_entered ?? payload.phone_e164 ?? payload.phone ?? '',
+  );
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
 
-  const digits = serializeSheetValue(payload.phone ?? '');
-  if (digits) return digits;
+  let national = digits;
+  if (national.startsWith('971')) national = national.slice(3);
+  else if (national.startsWith('965')) return `+${digits}`;
+  if (national.startsWith('0')) national = national.slice(1);
 
-  const e164 = serializeSheetValue(payload.phone_e164 ?? '');
-  if (e164.startsWith('+')) return e164.slice(1);
-  return e164;
+  if (/^5\d{8}$/.test(national)) return `+971${national}`;
+  if (digits.startsWith('971')) return `+${digits}`;
+  if (raw.startsWith('+')) return `+${digits}`;
+
+  return national ? `+971${national}` : '';
 }
 
 function countryFromPhone(phone) {
