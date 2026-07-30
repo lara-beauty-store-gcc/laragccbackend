@@ -4,9 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
+import { IconWhatsApp } from '@/components/icons';
 import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
 import { useCart } from '@/lib/cart';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const { brand } = businessInputs;
 
@@ -53,6 +55,15 @@ export function SiteHeader() {
             >
               الأسئلة
             </Link>
+            <a
+              href={buildWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-[#25D366]/35 bg-gradient-to-r from-[#25D366]/15 to-[#128C7E]/10 px-3.5 py-1.5 text-sm font-bold text-[#0d6b4f] shadow-sm transition hover:border-[#25D366]/60 hover:from-[#25D366]/25 hover:to-[#128C7E]/15"
+            >
+              <IconWhatsApp className="h-4 w-4 text-[#25D366]" />
+              واتساب
+            </a>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -93,6 +104,18 @@ export function SiteHeader() {
               <Link href="#products" className="block py-2.5 text-muted hover:text-primary" onClick={() => setMenuOpen(false)}>
                 العلكات
               </Link>
+            </li>
+            <li>
+              <a
+                href={buildWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 py-2.5 font-medium text-[#128C7E]"
+                onClick={() => setMenuOpen(false)}
+              >
+                <IconWhatsApp className="h-4 w-4 text-[#25D366]" />
+                واتساب
+              </a>
             </li>
             {products.map((p) => (
               <li key={p.id}>

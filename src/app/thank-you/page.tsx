@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { IconWhatsApp } from '@/components/icons';
 import { businessInputs } from '@/config/business';
 import { formatPrice } from '@/lib/pricing';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const { brand } = businessInputs;
 
@@ -94,9 +96,21 @@ function ThankYouContent() {
           خلي جوالك مفتوح — فريقنا يتصل فيك خلال ساعات عمل لتأكيد العنوان.
         </p>
 
+        <a
+          href={buildWhatsAppUrl(
+            orderId ? `مرحباً، عندي سؤال عن طلبي رقم ${orderId}` : undefined,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] px-6 py-3 font-arabic text-sm font-bold text-white shadow-lg shadow-[#25D366]/30 transition hover:brightness-105"
+        >
+          <IconWhatsApp className="h-5 w-5" />
+          تواصلي على واتساب
+        </a>
+
         <Link
           href="/"
-          className="mt-8 inline-block rounded-xl bg-primary px-8 py-3 font-arabic text-sm font-semibold text-white"
+          className="mt-6 inline-block rounded-xl bg-primary px-8 py-3 font-arabic text-sm font-semibold text-white"
         >
           رجوع للرئيسية
         </Link>
