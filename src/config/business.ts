@@ -44,6 +44,12 @@ export const businessConfig = {
     tiktok: 'https://www.tiktok.com/@lara_beauty_gcc',
     facebook: 'https://www.facebook.com/profile.php?id=61592789362233',
     website: 'https://larabeauty.store',
+    whatsapp: 'https://wa.me/12402107635',
+  },
+  whatsapp: {
+    e164: '+12402107635',
+    display: '+1 (240) 210-7635',
+    defaultMessage: 'مرحباً لارا للجمال، عندي استفسار عن المنتجات والطلب 🌿',
   },
   design: {
     primaryColor: '#134E3A',

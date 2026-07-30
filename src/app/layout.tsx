@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { businessInputs } from '@/config/business';
 import { CartProvider } from '@/lib/cart';
 import { CheckoutModal } from '@/components/CheckoutModal';
+import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
@@ -32,6 +33,7 @@ export default function RootLayout({
           <SiteHeader />
           <main className="flex-1 overflow-x-clip">{children}</main>
           <CheckoutModal />
+          <WhatsAppFloatingButton />
         </CartProvider>
       </body>
     </html>

@@ -1,11 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Leaf, ShieldCheck, Truck } from 'lucide-react';
+import { Heart, Instagram, Leaf, ShieldCheck, Truck } from 'lucide-react';
 import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
+import { IconFacebook, IconTikTok, IconWhatsApp } from '@/components/icons';
 import { getTrustBadges } from '@/lib/marketing';
+import { buildWhatsAppUrl, whatsappDisplayNumber } from '@/lib/whatsapp';
 
-const { brand, market } = businessInputs;
+const { brand, market, social } = businessInputs;
+
+const socialLinks = [
+  { href: social.whatsapp, label: 'واتساب', Icon: IconWhatsApp, highlight: true as const },
+  { href: social.instagram, label: 'Instagram', Icon: Instagram },
+  { href: social.tiktok, label: 'TikTok', Icon: IconTikTok },
+  { href: social.facebook, label: 'Facebook', Icon: IconFacebook },
+] as const;
 
 const footerIcons = [ShieldCheck, Leaf, Truck, Heart];
 
@@ -27,6 +36,37 @@ export function SiteFooter() {
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                {socialLinks.map((item) => {
+                  const { href, label, Icon: SocialIcon } = item;
+                  const highlight = 'highlight' in item && item.highlight;
+                  return (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${
+                        highlight
+                          ? 'border-[#25D366]/40 bg-[#25D366]/15 text-[#3DFF8B] hover:border-[#25D366] hover:bg-[#25D366]/25 hover:text-white'
+                          : 'border-white/15 bg-white/5 text-white/80 hover:border-secondary hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <SocialIcon className="h-5 w-5" />
+                    </a>
+                  );
+                })}
+              </div>
+              <a
+                href={buildWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#6EEB9F] transition hover:text-white"
+              >
+                <IconWhatsApp className="h-4 w-4" />
+                <span dir="ltr">{whatsappDisplayNumber()}</span>
+              </a>
             </div>
           </div>
 
