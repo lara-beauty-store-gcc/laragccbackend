@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { businessInputs } from '@/config/business';
 import { formatPrice } from '@/lib/pricing';
+import { trackPurchase } from '@/lib/tracking';
 
 const { brand } = businessInputs;
 
@@ -26,7 +27,17 @@ function ThankYouContent() {
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('lara-last-order');
-      if (raw) setOrder(JSON.parse(raw) as SavedOrder);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as SavedOrder;
+      setOrder(saved);
+
+      if (saved.orderId && saved.total != null) {
+        trackPurchase({
+          orderId: saved.orderId,
+          value: saved.total,
+          currency: saved.currency || 'AED',
+        });
+      }
     } catch {
       /* ignore */
     }

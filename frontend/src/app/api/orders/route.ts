@@ -11,6 +11,9 @@ import {
 import { forwardOrderToSheets } from '@/lib/sheets-webhook';
 import { syncUnsyncedOrdersToSheets } from '@/lib/sheets-sync';
 import { normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
+import { purchaseEventId } from '@/lib/tiktok-capi';
+import { sendSnapPurchase } from '@/lib/snap-capi';
+import { sendTikTokPurchase } from '@/lib/tiktok-capi';
 
 type IncomingBody = {
   customerName?: string;
@@ -22,6 +25,41 @@ type IncomingBody = {
 };
 
 const { market } = businessConfig;
+
+function clientIp(req: Request): string | undefined {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]?.trim();
+  return req.headers.get('x-real-ip') ?? undefined;
+}
+
+function orderTotal(items: ReturnType<typeof normalizeOrderItems>): number {
+  return items.reduce((sum, item) => sum + item.totalPrice, 0);
+}
+
+async function firePurchaseCapi(
+  req: Request,
+  orderId: string,
+  phoneE164: string,
+  normalizedItems: ReturnType<typeof normalizeOrderItems>,
+  sourceUrl: string,
+) {
+  const eventId = purchaseEventId(orderId);
+  const payload = {
+    orderId,
+    eventId,
+    value: orderTotal(normalizedItems),
+    currency: market.currency,
+    phone: phoneE164,
+    sourceUrl,
+    contentIds: normalizedItems.map((item) => item.sku).filter(Boolean),
+  };
+  const context = {
+    ip: clientIp(req),
+    userAgent: req.headers.get('user-agent') ?? undefined,
+  };
+
+  await Promise.all([sendTikTokPurchase(payload, context), sendSnapPurchase(payload, context)]);
+}
 
 function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
@@ -182,6 +220,7 @@ export async function POST(req: Request) {
       if (sheetSynced) {
         await markOrdersSynced(api.orderIds);
         await syncUnsyncedOrdersToSheets();
+        await firePurchaseCapi(req, api.orderId, phoneE164, normalizedItems, payload.sourceUrl);
         return Response.json({ success: true, ...api, sheetSynced: true });
       }
 
@@ -218,6 +257,7 @@ export async function POST(req: Request) {
       const local = await persistOrdersLocally(payload, sheets.orderIds);
       await markOrdersSynced(local.orderIds);
       await syncUnsyncedOrdersToSheets();
+      await firePurchaseCapi(req, sheets.orderIds[0], phoneE164, normalizedItems, payload.sourceUrl);
       return Response.json({
         success: true,
         orderId: sheets.orderIds[0],

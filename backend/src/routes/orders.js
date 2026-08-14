@@ -2,10 +2,7 @@ import { Router } from 'express';
 import { config } from '../config.js';
 import { createOrder, logEvent, markSheetSynced } from '../db.js';
 import { log } from '../logger.js';
-import { sendMetaEvent } from '../services/meta-capi.js';
 import { forwardToGoogleSheets } from '../services/sheets.js';
-import { sendSnapEvent } from '../services/snap-capi.js';
-import { sendTiktokEvent } from '../services/tiktok-capi.js';
 import { isValidGccPhone, normalizeGccPhone } from '../services/phone.js';
 
 const router = Router();
@@ -172,34 +169,28 @@ router.post('/', async (req, res) => {
       sourceUrl: order.sourceUrl,
       contentIds: items.map((i) => i.sku).filter(Boolean),
     };
-    const ctx = { ip: order.clientIp, userAgent: req.headers['user-agent'] || '' };
 
-    const [meta, tiktok, snap, sheets] = await Promise.all([
-      sendMetaEvent('Purchase', capiPayload, ctx),
-      sendTiktokEvent('Purchase', capiPayload, ctx),
-      sendSnapEvent('Purchase', capiPayload, ctx),
-      forwardToGoogleSheets('Purchase', {
-        order_number: orderNumber,
-        order_id: orderNumber,
-        customer_name: name,
-        phone_raw: phoneAsEntered,
-        phone: phoneAsEntered.replace(/[\s\-()]/g, ''),
-        phone_e164: phoneE164,
-        country: 'AE',
-        area_notes: order.areaNotes,
-        items: dbItems,
-        total_aed: totalAmount,
-        total: totalAmount,
-        totalprice: totalAmount,
-        currency,
-        source_url: order.sourceUrl,
-        url: order.sourceUrl,
-        upsell_accepted: order.upsellAccepted,
-        payment_method: 'COD',
-      }),
-    ]);
+    const sheets = await forwardToGoogleSheets('Purchase', {
+      order_number: orderNumber,
+      order_id: orderNumber,
+      customer_name: name,
+      phone_raw: phoneAsEntered,
+      phone: phoneAsEntered.replace(/[\s\-()]/g, ''),
+      phone_e164: phoneE164,
+      country: 'AE',
+      area_notes: order.areaNotes,
+      items: dbItems,
+      total_aed: totalAmount,
+      total: totalAmount,
+      totalprice: totalAmount,
+      currency,
+      source_url: order.sourceUrl,
+      url: order.sourceUrl,
+      upsell_accepted: order.upsellAccepted,
+      payment_method: 'COD',
+    });
 
-    await logEvent('Purchase', { orderNumber, ...capiPayload }, { meta, tiktok, snap, sheets }, order.clientIp);
+    await logEvent('Purchase', { orderNumber, ...capiPayload }, { sheets }, order.clientIp);
 
     if (!sheets.ok) {
       await markSheetSynced(orderNumber, String(sheets.error || sheets.body));

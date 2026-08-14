@@ -119,26 +119,20 @@ Reference: [Snap parameters](https://developers.snap.com/api/marketing-api/Conve
 
 ## Backend env (secrets — never in frontend)
 
+Marketing CAPI (TikTok, Snap) runs on the **frontend store service** only. See [17-marketing-pixels-backend-brief.md](./17-marketing-pixels-backend-brief.md).
+
 ```env
-META_PIXEL_ID=
-META_ACCESS_TOKEN=
-META_API_VERSION=v21.0
-TIKTOK_PIXEL_CODE=
+# Frontend EasyPanel service (server-only)
 TIKTOK_ACCESS_TOKEN=
-SNAP_PIXEL_ID=
+TIKTOK_PIXEL_ID=
 SNAP_ACCESS_TOKEN=
-ENABLE_META_CAPI=true
-ENABLE_TIKTOK_CAPI=true
-ENABLE_SNAP_CAPI=true
+SNAP_PIXEL_ID=
+SNAP_TEST_EVENT_CODE=
 ```
 
-## Frontend env (public pixels only)
+## Frontend env (public pixels hardcoded; CAPI tokens server-only)
 
-```env
-NEXT_PUBLIC_META_PIXEL_ID=
-NEXT_PUBLIC_TIKTOK_PIXEL_ID=
-NEXT_PUBLIC_SNAP_PIXEL_ID=
-```
+Browser pixel IDs are in `frontend/src/components/marketing/`. CAPI tokens go in EasyPanel on the **store** service.
 
 ## Consent (Kuwait)
 
