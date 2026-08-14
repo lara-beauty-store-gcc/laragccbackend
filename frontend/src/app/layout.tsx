@@ -3,6 +3,7 @@ import { businessInputs } from '@/config/business';
 import { CartProvider } from '@/lib/cart';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
+import { MarketingPixels } from '@/components/marketing/MarketingPixels';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
 
@@ -26,6 +27,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang={market.language} dir={market.direction}>
+      <head>
+        <MarketingPixels />
+      </head>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
           <AnnouncementBar />

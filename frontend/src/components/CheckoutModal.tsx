@@ -6,7 +6,7 @@ import { businessConfig } from '@/config/business';
 import { getProductBySlug, products } from '@/config/products';
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
-import { trackEvent } from '@/lib/tracking';
+import { trackEvent, trackInitiateCheckout } from '@/lib/tracking';
 import { isValidMarketPhone, normalizePhone, uaePhoneErrorMessage } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
 
@@ -57,6 +57,8 @@ export function CheckoutModal() {
     const area = [emirate, address.trim()].filter(Boolean).join(' — ');
 
     setLoading(true);
+    trackInitiateCheckout({ value: total, currency: orderCurrency });
+
     try {
       const phoneE164 = normalizePhone(phone);
       if (!phoneE164) {
