@@ -19,6 +19,7 @@ type IncomingBody = {
   area?: string;
   items?: RawSheetItem[];
   sourceUrl?: string;
+  paymentMethod?: 'COD' | 'CARD';
 };
 
 const { market } = businessConfig;
@@ -75,6 +76,7 @@ async function forwardToBackendApi(
           area: body.area,
           country: market.countryCode,
           currency: market.currency,
+          paymentMethod: body.paymentMethod || 'COD',
           items: normalizedItems.map((item) => ({
             sku: item.sku,
             name: item.product,
@@ -108,6 +110,11 @@ async function forwardToBackendApi(
         source: 'api' as const,
         sheetSynced: sheetsOk,
         sheetsStatus: String(data.sheets || ''),
+        paymentMethod: String(data.paymentMethod || body.paymentMethod || 'COD'),
+        subtotalAed: Number(data.subtotalAed ?? 0),
+        deliveryFeeAed: Number(data.deliveryFeeAed ?? 0),
+        totalAed: Number(data.totalAed ?? data.total ?? 0),
+        checkoutUrl: data.checkoutUrl ? String(data.checkoutUrl) : undefined,
       };
     } catch {
       // try next format
@@ -160,6 +167,22 @@ export async function POST(req: Request) {
     // 1) Backend API — LARA-XXXX IDs + Google Sheets via api.larabeauty.store
     const api = await forwardToBackendApi(body, phoneE164, normalizedItems);
     if (api) {
+      if (api.paymentMethod === 'CARD' && api.checkoutUrl) {
+        return Response.json({
+          success: true,
+          orderId: api.orderId,
+          orderIds: api.orderIds,
+          source: api.source,
+          paymentMethod: 'CARD',
+          subtotalAed: api.subtotalAed,
+          deliveryFeeAed: api.deliveryFeeAed,
+          totalAed: api.totalAed,
+          checkoutUrl: api.checkoutUrl,
+          sheetSynced: false,
+          sheetsStatus: api.sheetsStatus,
+        });
+      }
+
       let sheetSynced = api.sheetSynced;
 
       if (!sheetSynced) {

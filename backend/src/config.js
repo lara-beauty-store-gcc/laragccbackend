@@ -36,7 +36,9 @@ export const config = {
   gitSha: env('GIT_SHA'),
 
   sheetsWebhookUrl: env('GOOGLE_SHEETS_WEBHOOK_URL'),
+  sheetsCardWebhookUrl: env('GOOGLE_SHEETS_CARD_WEBHOOK_URL'),
   sheetsWebhookSecret: env('SHEETS_WEBHOOK_SECRET'),
+  sheetsCardWebhookSecret: env('SHEETS_CARD_WEBHOOK_SECRET'),
 
   meta: {
     pixelId: env('META_PIXEL_ID'),
@@ -69,6 +71,14 @@ export const config = {
     .map((p) => p.replace(/\D/g, ''))
     .filter(Boolean),
 
+  stripe: {
+    secretKey: env('STRIPE_SECRET_KEY'),
+    webhookSecret: env('STRIPE_WEBHOOK_SECRET'),
+    publishableKey: env('STRIPE_PUBLISHABLE_KEY'),
+  },
+
+  codDeliveryFeeAed: Number(env('COD_DELIVERY_FEE_AED', '20')) || 20,
+
   logLevel: env('LOG_LEVEL', 'INFO').toUpperCase(),
 };
 
@@ -78,7 +88,9 @@ export function isConfigured() {
     tiktok: Boolean(config.tiktok.pixelCode && config.tiktok.accessToken),
     snap: Boolean(config.snap.pixelId && config.snap.accessToken),
     sheets: Boolean(config.sheetsWebhookUrl),
+    sheetsCard: Boolean(config.sheetsCardWebhookUrl),
     database: Boolean(config.databaseUrl),
     maxmind: Boolean(config.maxmind.accountId && config.maxmind.licenseKey),
+    stripe: Boolean(config.stripe.secretKey),
   };
 }

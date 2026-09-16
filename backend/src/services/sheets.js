@@ -211,6 +211,14 @@ export function buildSheetBody(eventName, payload = {}) {
 
   const quantite = items.length > 0 ? totalQuantity(items) : Number(payload.quantite ?? payload.quantity) || 1;
   const total = resolveTotal(payload, items);
+  const paymentMethod =
+    serializeSheetValue(payload.payment_method ?? payload.paymentMethod) || 'COD';
+  const paymentStatus = serializeSheetValue(
+    payload.payment_status ?? payload.paymentStatus,
+  );
+  const deliveryFee = Number(
+    payload.delivery_fee_aed ?? payload.delivery_fee ?? payload.deliveryFee ?? 0,
+  );
 
   const body = {
     secret: config.sheetsWebhookSecret || undefined,
@@ -231,6 +239,9 @@ export function buildSheetBody(eventName, payload = {}) {
     'total price': total,
     currency,
     area: serializeSheetValue(payload.area_notes ?? payload.area),
+    payment_method: paymentMethod,
+    payment_status: paymentStatus,
+    delivery_fee: Number.isFinite(deliveryFee) ? deliveryFee : 0,
   };
 
   // Never send items[] or nested objects — Apps Script turns arrays into [Ljava.lang.Object;@…]
@@ -253,6 +264,9 @@ export function buildSheetBody(eventName, payload = {}) {
     'total price',
     'currency',
     'area',
+    'payment_method',
+    'payment_status',
+    'delivery_fee',
   ]);
 
   const flat = {};
@@ -266,6 +280,26 @@ export function buildSheetBody(eventName, payload = {}) {
   }
 
   return flat;
+}
+
+/** Route COD and card orders to separate Google Sheets webhooks. */
+export function resolveSheetsWebhook(paymentMethod) {
+  const method = String(paymentMethod || 'COD').trim().toUpperCase();
+  const isCard = method === 'CARD' || method === 'STRIPE';
+
+  if (isCard) {
+    return {
+      channel: 'card',
+      url: config.sheetsCardWebhookUrl,
+      secret: config.sheetsCardWebhookSecret || config.sheetsWebhookSecret,
+    };
+  }
+
+  return {
+    channel: 'cod',
+    url: config.sheetsWebhookUrl,
+    secret: config.sheetsWebhookSecret,
+  };
 }
 
 /**
@@ -320,38 +354,55 @@ export async function forwardToGoogleSheets(eventName, payload) {
     return { ok: true, skipped: true, reason: 'sheets_purchase_only' };
   }
 
-  if (!config.sheetsWebhookUrl) {
-    return { ok: true, skipped: true, reason: 'sheets_not_configured' };
+  const paymentMethod = payload.payment_method ?? payload.paymentMethod ?? 'COD';
+  const target = resolveSheetsWebhook(paymentMethod);
+
+  if (!target.url) {
+    return {
+      ok: true,
+      skipped: true,
+      reason: `sheets_not_configured_${target.channel}`,
+      channel: target.channel,
+    };
   }
 
   const orderId = serializeSheetValue(
     payload.order_number ?? payload.orderId ?? payload.order_id ?? payload['order id'],
   );
   if (!orderId) {
-    return { ok: false, error: 'missing_order_id' };
+    return { ok: false, error: 'missing_order_id', channel: target.channel };
   }
 
   const body = buildSheetBody(eventName, payload);
+  body.secret = target.secret || undefined;
 
   if (!body.name || !body.phone) {
     log.warn('Sheets skip — incomplete order row', {
       orderId,
+      channel: target.channel,
       name: Boolean(body.name),
       phone: Boolean(body.phone),
     });
-    return { ok: false, error: 'incomplete_order_row' };
+    return { ok: false, error: 'incomplete_order_row', channel: target.channel };
   }
 
   try {
-    const result = await postToAppsScript(config.sheetsWebhookUrl, body);
+    const result = await postToAppsScript(target.url, body);
     if (!result.ok) {
-      log.warn('Google Sheets webhook failed', result.status, result.body || result.error);
-      return result;
+      log.warn('Google Sheets webhook failed', {
+        channel: target.channel,
+        status: result.status,
+        body: result.body || result.error,
+      });
+      return { ...result, channel: target.channel };
     }
-    log.info('Google Sheets webhook ok', result.data?.sheet || 'ok');
-    return { ok: true, ...result };
+    log.info('Google Sheets webhook ok', {
+      channel: target.channel,
+      sheet: result.data?.sheet || 'ok',
+    });
+    return { ok: true, channel: target.channel, ...result };
   } catch (err) {
-    log.error('Google Sheets webhook error', err.message);
-    return { ok: false, error: err.message };
+    log.error('Google Sheets webhook error', { channel: target.channel, message: err.message });
+    return { ok: false, error: err.message, channel: target.channel };
   }
 }

@@ -6,12 +6,12 @@ import { closeDb, getPool, initDb } from './db.js';
 import { log } from './logger.js';
 import eventsRouter from './routes/events.js';
 import ordersRouter from './routes/orders.js';
+import stripeRouter from './routes/stripe.js';
 
 const app = express();
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '1mb' }));
 
 function buildAllowedOrigins() {
   const list = [...config.corsOrigins];
@@ -63,10 +63,16 @@ app.get('/', (_req, res) => {
     endpoints: {
       health: '/health',
       orders: 'POST /api/v1/orders',
+      orderStatus: 'GET /api/v1/orders/:orderNumber/status',
+      stripeWebhook: 'POST /api/stripe/webhook',
       events: 'POST /api/events',
     },
   });
 });
+
+app.use('/api/stripe', express.raw({ type: 'application/json' }), stripeRouter);
+
+app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/v1/orders', ordersRouter);
 app.use('/api/events', eventsRouter);
@@ -85,6 +91,7 @@ function startServer() {
     log.info(`${config.appName} READY on 0.0.0.0:${config.port}`);
     log.info('Health: GET /health');
     log.info('Orders: POST /api/v1/orders');
+    log.info('Stripe webhook: POST /api/stripe/webhook');
     log.info('CORS origins:', allowedOrigins.join(', ') || '(none)');
     log.info('Configured:', JSON.stringify(isConfigured()));
     log.info('========================================');

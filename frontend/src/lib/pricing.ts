@@ -28,6 +28,18 @@ export function formatSavings(offer: ProductOffer): string | null {
   return `وفّري ${formatPrice(s)}`;
 }
 
+export type PaymentMethod = 'COD' | 'CARD';
+
+export function calcCheckoutTotals(subtotal: number, paymentMethod: PaymentMethod) {
+  const deliveryFee =
+    paymentMethod === 'COD' ? businessConfig.cod.deliveryFeeAed : 0;
+  return {
+    subtotal,
+    deliveryFee,
+    total: subtotal + deliveryFee,
+  };
+}
+
 export function ctaLabel(product: ProductConfig, offer: ProductOffer): string {
   return `ابدئي ${product.shortName} الآن · ${formatPrice(offer.price)}`;
 }

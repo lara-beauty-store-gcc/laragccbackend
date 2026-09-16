@@ -1,83 +1,26 @@
 import { Router } from 'express';
 import { config } from '../config.js';
-import { createOrder, logEvent, markSheetSynced } from '../db.js';
+import {
+  createOrder,
+  getOrderByNumber,
+  updateOrderStripeSession,
+} from '../db.js';
 import { log } from '../logger.js';
-import { sendMetaEvent } from '../services/meta-capi.js';
-import { forwardToGoogleSheets } from '../services/sheets.js';
-import { sendSnapEvent } from '../services/snap-capi.js';
-import { sendTiktokEvent } from '../services/tiktok-capi.js';
+import {
+  buildDbItems,
+  calcOrderTotals,
+  normalizePaymentMethod,
+} from '../pricing.js';
+import { sendPurchaseIntegrations } from '../services/order-fulfillment.js';
 import { isValidGccPhone, normalizeGccPhone } from '../services/phone.js';
+import { createCheckoutSession, isStripeEnabled } from '../services/stripe.js';
 
 const router = Router();
-
-const PRICES_AED = {
-  b1: 189,
-  b2: 239,
-  b3: 339,
-  UPSELL: 49,
-};
-
-/** Units per bundle offer (one=1 box, two=2 boxes, three=3 boxes). */
-const BUNDLE_PACK = { b1: 1, b2: 2, b3: 3, UPSELL: 1 };
-
-function resolveBundleCount(item) {
-  const pack = BUNDLE_PACK[normalizeBundleId(item.bundleId)] ?? 1;
-  const raw = Number(item.quantity) || 1;
-  if (raw <= 1) return 1;
-  if (raw === pack) return 1;
-  if (raw > pack && raw % pack === 0) return raw / pack;
-  return raw;
-}
-
-/** Total physical units for sheets — e.g. "two" bundle → 2 even if quantity field is 1. */
-function resolveUnitCount(item) {
-  const pack = BUNDLE_PACK[normalizeBundleId(item.bundleId)] ?? 1;
-  const raw = Number(item.quantity) || 1;
-  if (raw === 1 && pack > 1) return pack;
-  if (raw >= pack) return Math.round(raw);
-  return Math.round(raw * pack);
-}
-
-/** Frontend sends offer ids one|two|three; legacy clients may send b1|b2|b3 */
-const BUNDLE_ALIASES = {
-  one: 'b1',
-  two: 'b2',
-  three: 'b3',
-  b1: 'b1',
-  b2: 'b2',
-  b3: 'b3',
-};
-
-function normalizeBundleId(bundleId) {
-  const key = String(bundleId || 'b1').toLowerCase();
-  return BUNDLE_ALIASES[key] || key;
-}
 
 function clientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded) return String(forwarded).split(',')[0].trim();
   return req.socket.remoteAddress || '';
-}
-
-function lineUnitPrice(item) {
-  const bundle = normalizeBundleId(item.bundleId);
-  return (
-    PRICES_AED[bundle] ??
-    Number(item.unitPrice ?? item.unitPriceAed ?? item.unitPriceKwd) ??
-    PRICES_AED.b1
-  );
-}
-
-function calcTotal(items, upsell) {
-  let total = 0;
-  for (const item of items) {
-    const unit = lineUnitPrice(item);
-    total += unit * resolveBundleCount(item);
-  }
-  if (upsell?.accepted) {
-    total += PRICES_AED.UPSELL;
-  }
-  return Math.round(total * 1000) / 1000;
 }
 
 router.post('/', async (req, res) => {
@@ -105,56 +48,39 @@ router.post('/', async (req, res) => {
     }
 
     const upsell = body.upsell || {};
+    const paymentMethod = normalizePaymentMethod(body.paymentMethod);
     const currency = 'AED';
-    const totalAmount = calcTotal(items, upsell);
+    const { subtotalAmount, deliveryFee, totalAmount } = calcOrderTotals(
+      items,
+      upsell,
+      paymentMethod,
+    );
     const orderNumber = `LARA-${Date.now().toString(36).toUpperCase()}`;
     const eventId = body.eventId || `purchase_${orderNumber}`;
+    const sourceUrl = body.sourceUrl || config.frontendUrl;
+    const ip = clientIp(req);
+    const userAgent = req.headers['user-agent'] || '';
+    const dbItems = buildDbItems(items, upsell);
 
     const order = {
       orderNumber,
       customerName: name,
       phoneE164,
       areaNotes: body.area || body.areaNotes || '',
-      subtotalAmount: totalAmount,
+      subtotalAmount,
+      deliveryFee,
       totalAmount,
       currency,
-      paymentMethod: 'COD',
+      paymentMethod,
+      paymentStatus: paymentMethod === 'CARD' ? 'pending' : 'cod_pending',
+      status: paymentMethod === 'CARD' ? 'pending_payment' : 'pending_confirmation',
       upsellAccepted: Boolean(upsell.accepted),
       upsellProductId: upsell.productId || null,
-      upsellAmount: upsell.accepted ? PRICES_AED.UPSELL : null,
+      upsellAmount: upsell.accepted ? 49 : null,
       eventId,
-      sourceUrl: body.sourceUrl || config.frontendUrl,
-      clientIp: clientIp(req),
+      sourceUrl,
+      clientIp: ip,
     };
-
-    const dbItems = items.map((i) => {
-      const bundle = normalizeBundleId(i.bundleId);
-      const unit = lineUnitPrice(i);
-      const bundles = resolveBundleCount(i);
-      const units = resolveUnitCount(i);
-      const productName = String(i.name || i.productName || '').trim();
-      return {
-        productId: i.productId || i.id,
-        sku: String(i.sku || '').trim(),
-        productName: productName || String(i.sku || '').trim(),
-        bundleId: bundle,
-        quantity: units,
-        unitPrice: unit,
-        lineTotal: unit * bundles,
-      };
-    });
-
-    if (upsell.accepted && upsell.sku) {
-      dbItems.push({
-        productId: upsell.productId,
-        sku: upsell.sku,
-        productName: upsell.name || 'Upsell',
-        bundleId: 'UPSELL',
-        quantity: 1,
-        unitPrice: PRICES_AED.UPSELL,
-        lineTotal: PRICES_AED.UPSELL,
-      });
-    }
 
     let dbResult = null;
     try {
@@ -163,63 +89,117 @@ router.post('/', async (req, res) => {
       log.error('DB order insert failed', dbErr.message);
     }
 
-    const capiPayload = {
-      orderId: orderNumber,
-      value: totalAmount,
-      currency,
-      email: body.email,
-      phone: phoneE164,
-      sourceUrl: order.sourceUrl,
-      contentIds: items.map((i) => i.sku).filter(Boolean),
-    };
-    const ctx = { ip: order.clientIp, userAgent: req.headers['user-agent'] || '' };
+    if (paymentMethod === 'CARD') {
+      if (!isStripeEnabled()) {
+        return res.status(503).json({
+          error: 'stripe_not_configured',
+          message: 'الدفع بالبطاقة غير متاح حالياً — جربي الدفع عند الاستلام',
+        });
+      }
 
-    const [meta, tiktok, snap, sheets] = await Promise.all([
-      sendMetaEvent('Purchase', capiPayload, ctx),
-      sendTiktokEvent('Purchase', capiPayload, ctx),
-      sendSnapEvent('Purchase', capiPayload, ctx),
-      forwardToGoogleSheets('Purchase', {
-        order_number: orderNumber,
-        order_id: orderNumber,
-        customer_name: name,
-        phone_raw: phoneAsEntered,
-        phone: phoneAsEntered.replace(/[\s\-()]/g, ''),
-        phone_e164: phoneE164,
-        country: 'AE',
-        area_notes: order.areaNotes,
-        items: dbItems,
-        total_aed: totalAmount,
-        total: totalAmount,
-        totalprice: totalAmount,
+      const session = await createCheckoutSession({
+        orderNumber,
+        eventId,
+        customerName: name,
+        phoneE164,
+        areaNotes: order.areaNotes,
+        dbItems,
+        subtotalAmount,
+        deliveryFee,
+        totalAmount,
         currency,
-        source_url: order.sourceUrl,
-        url: order.sourceUrl,
-        upsell_accepted: order.upsellAccepted,
-        payment_method: 'COD',
-      }),
-    ]);
+        sourceUrl,
+      });
 
-    await logEvent('Purchase', { orderNumber, ...capiPayload }, { meta, tiktok, snap, sheets }, order.clientIp);
+      if (dbResult) {
+        await updateOrderStripeSession(orderNumber, session.id, session.payment_intent);
+      }
 
-    if (!sheets.ok) {
-      await markSheetSynced(orderNumber, String(sheets.error || sheets.body));
-    } else {
-      await markSheetSynced(orderNumber, null);
+      return res.json({
+        success: true,
+        orderId: orderNumber,
+        orderNumber,
+        paymentMethod: 'CARD',
+        subtotalAed: subtotalAmount,
+        deliveryFeeAed: deliveryFee,
+        totalAed: totalAmount,
+        total: totalAmount,
+        currency,
+        eventId,
+        checkoutUrl: session.url,
+        stripeSessionId: session.id,
+        db: Boolean(dbResult),
+        sheets: 'pending_payment',
+      });
     }
+
+    const integrations = await sendPurchaseIntegrations({
+      orderNumber,
+      totalAmount,
+      subtotalAmount,
+      deliveryFee,
+      currency,
+      paymentMethod: 'COD',
+      paymentStatus: 'cod_pending',
+      name,
+      phoneAsEntered,
+      phoneE164,
+      areaNotes: order.areaNotes,
+      sourceUrl,
+      dbItems,
+      upsellAccepted: order.upsellAccepted,
+      eventId,
+      clientIpValue: ip,
+      userAgent,
+    });
 
     return res.json({
       success: true,
       orderId: orderNumber,
       orderNumber,
+      paymentMethod: 'COD',
+      subtotalAed: subtotalAmount,
+      deliveryFeeAed: deliveryFee,
       totalAed: totalAmount,
       total: totalAmount,
       currency,
       eventId,
       db: Boolean(dbResult),
-      sheets: sheets.ok ? 'synced' : String(sheets.error || sheets.reason || 'failed'),
+      sheets: integrations.sheets.ok
+        ? 'synced'
+        : String(integrations.sheets.error || integrations.sheets.reason || 'failed'),
     });
   } catch (err) {
     log.error('Order error', err);
+    return res.status(500).json({ error: 'internal_error' });
+  }
+});
+
+router.get('/:orderNumber/status', async (req, res) => {
+  try {
+    const orderNumber = String(req.params.orderNumber || '').trim();
+    if (!orderNumber) {
+      return res.status(400).json({ error: 'invalid_order' });
+    }
+
+    const order = await getOrderByNumber(orderNumber);
+    if (!order) {
+      return res.status(404).json({ error: 'order_not_found' });
+    }
+
+    return res.json({
+      orderNumber: order.order_number,
+      paymentMethod: order.payment_method,
+      paymentStatus: order.payment_status,
+      status: order.status,
+      subtotalAed: Number(order.subtotal_amount),
+      deliveryFeeAed: Number(order.delivery_fee || 0),
+      totalAed: Number(order.total_amount),
+      currency: order.currency,
+      paidAt: order.paid_at,
+    });
+  } catch (err) {
+    log.error('Order status error', err);
     return res.status(500).json({ error: 'internal_error' });
   }
 });
