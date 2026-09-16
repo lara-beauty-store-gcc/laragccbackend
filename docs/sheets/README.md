@@ -8,7 +8,24 @@
 4. **Deploy → New deployment → Web app**
    - Execute as: Me
    - Who has access: **Anyone**
-5. Copy Web App URL → `GOOGLE_SHEETS_WEBHOOK_URL` in EasyPanel API service
+5. Copy Web App URL → `GOOGLE_SHEETS_WEBHOOK_URL` in EasyPanel API service (COD orders)
+
+### Card payments sheet (separate)
+
+Repeat steps 1–5 on a **second Google Sheet** for online card orders:
+
+1. Create / open a dedicated sheet (e.g. **Sheet Card Orders Lara beauty**)
+2. Deploy the same [ORDERS_WEBHOOK.gs](./ORDERS_WEBHOOK.gs) as a new web app
+3. Copy that URL → `GOOGLE_SHEETS_CARD_WEBHOOK_URL` in EasyPanel
+
+Routing:
+
+| Payment | Env var | Sheet |
+|---------|---------|-------|
+| COD | `GOOGLE_SHEETS_WEBHOOK_URL` | COD sheet |
+| Card (Stripe) | `GOOGLE_SHEETS_CARD_WEBHOOK_URL` | Card sheet |
+
+Optional: set `SHEETS_CARD_WEBHOOK_SECRET` if the card Apps Script uses a different secret (otherwise `SHEETS_WEBHOOK_SECRET` is reused).
 
 **Important:** Use the URL **without** `/u/1/` if possible:
 `https://script.google.com/macros/s/AKfycb.../exec`

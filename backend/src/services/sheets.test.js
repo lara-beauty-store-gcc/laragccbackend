@@ -163,6 +163,34 @@ describe('buildSheetBody', () => {
     assert.equal(body.quantite, 2);
     assert.equal(body.product, 'Magnesium Glycinate Gummies x2');
   });
+
+  it('includes payment_method and delivery_fee columns', () => {
+    const cod = buildSheetBody('Purchase', {
+      order_number: 'LARA-COD',
+      customer_name: 'Sara',
+      phone_e164: '+971501234567',
+      total_aed: 259,
+      payment_method: 'COD',
+      payment_status: 'cod_pending',
+      delivery_fee_aed: 20,
+    });
+    assert.equal(cod.payment_method, 'COD');
+    assert.equal(cod.payment_status, 'cod_pending');
+    assert.equal(cod.delivery_fee, 20);
+
+    const card = buildSheetBody('Purchase', {
+      order_number: 'LARA-CARD',
+      customer_name: 'Sara',
+      phone_e164: '+971501234567',
+      total_aed: 239,
+      payment_method: 'CARD',
+      payment_status: 'paid',
+      delivery_fee_aed: 0,
+    });
+    assert.equal(card.payment_method, 'CARD');
+    assert.equal(card.payment_status, 'paid');
+    assert.equal(card.delivery_fee, 0);
+  });
 });
 
 describe('normalizeOrderItems', () => {

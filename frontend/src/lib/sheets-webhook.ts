@@ -15,6 +15,7 @@ export type SheetsOrderPayload = {
   items: SheetsOrderItem[] | RawSheetItem[];
   orderIds?: string[];
   date?: string;
+  paymentMethod?: 'COD' | 'CARD';
 };
 
 export type SheetsForwardResult =
@@ -23,7 +24,15 @@ export type SheetsForwardResult =
 
 const { market } = businessConfig;
 
-export function sheetsWebhookUrl() {
+export function sheetsWebhookUrl(paymentMethod: 'COD' | 'CARD' = 'COD') {
+  const method = String(paymentMethod || 'COD').toUpperCase();
+  if (method === 'CARD') {
+    return (
+      process.env.GOOGLE_SHEETS_CARD_WEBHOOK_URL ||
+      process.env.ORDERS_SHEETS_CARD_WEBHOOK_URL ||
+      ''
+    );
+  }
   return (
     process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
     process.env.ORDERS_SHEETS_WEBHOOK_URL ||
@@ -31,8 +40,8 @@ export function sheetsWebhookUrl() {
   );
 }
 
-export function sheetsWebhookConfigured() {
-  return Boolean(sheetsWebhookUrl());
+export function sheetsWebhookConfigured(paymentMethod: 'COD' | 'CARD' = 'COD') {
+  return Boolean(sheetsWebhookUrl(paymentMethod));
 }
 
 function siteBaseUrl() {
@@ -93,9 +102,10 @@ function sleep(ms: number) {
 }
 
 export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise<SheetsForwardResult> {
-  const webhookUrl = sheetsWebhookUrl();
+  const paymentMethod = payload.paymentMethod || 'COD';
+  const webhookUrl = sheetsWebhookUrl(paymentMethod);
   if (!webhookUrl) {
-    return { ok: false, reason: 'sheets_not_configured' };
+    return { ok: false, reason: `sheets_not_configured_${paymentMethod.toLowerCase()}` };
   }
 
   const presetIds = Array.isArray(payload.orderIds) ? payload.orderIds.map(String) : [];
@@ -126,7 +136,12 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
   const sku = rows.map((row) => row.sku).filter(Boolean).join(', ');
   const url = rows.map((row) => row.url).find(Boolean) || payload.sourceUrl || siteBaseUrl();
 
-  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || 'lara-beauty-secret-2026';
+  const webhookSecret =
+    paymentMethod === 'CARD'
+      ? process.env.SHEETS_CARD_WEBHOOK_SECRET ||
+        process.env.SHEETS_WEBHOOK_SECRET ||
+        'lara-beauty-secret-2026'
+      : process.env.SHEETS_WEBHOOK_SECRET || 'lara-beauty-secret-2026';
 
   const body = {
     secret: webhookSecret,
@@ -149,6 +164,7 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
     'total price': totalprice,
     currency: String(payload.currency || market.currency).trim() || market.currency,
     area: String(payload.area || '').trim(),
+    payment_method: paymentMethod,
   };
 
   try {

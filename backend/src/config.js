@@ -36,7 +36,9 @@ export const config = {
   gitSha: env('GIT_SHA'),
 
   sheetsWebhookUrl: env('GOOGLE_SHEETS_WEBHOOK_URL'),
+  sheetsCardWebhookUrl: env('GOOGLE_SHEETS_CARD_WEBHOOK_URL'),
   sheetsWebhookSecret: env('SHEETS_WEBHOOK_SECRET'),
+  sheetsCardWebhookSecret: env('SHEETS_CARD_WEBHOOK_SECRET'),
 
   meta: {
     pixelId: env('META_PIXEL_ID'),
@@ -86,6 +88,7 @@ export function isConfigured() {
     tiktok: Boolean(config.tiktok.pixelCode && config.tiktok.accessToken),
     snap: Boolean(config.snap.pixelId && config.snap.accessToken),
     sheets: Boolean(config.sheetsWebhookUrl),
+    sheetsCard: Boolean(config.sheetsCardWebhookUrl),
     database: Boolean(config.databaseUrl),
     maxmind: Boolean(config.maxmind.accountId && config.maxmind.licenseKey),
     stripe: Boolean(config.stripe.secretKey),
