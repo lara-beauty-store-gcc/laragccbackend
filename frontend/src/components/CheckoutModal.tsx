@@ -5,12 +5,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { businessConfig } from '@/config/business';
 import { getProductBySlug, products } from '@/config/products';
 import { useCart } from '@/lib/cart';
-import { formatPrice } from '@/lib/pricing';
+import { calcCheckoutTotals, formatPrice, type PaymentMethod } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
 import { isValidMarketPhone, normalizePhone, uaePhoneErrorMessage } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
 
-const { market, delivery } = businessConfig;
+const { market, delivery, cod, card } = businessConfig;
 
 export function CheckoutModal() {
   const router = useRouter();
@@ -19,10 +19,16 @@ export function CheckoutModal() {
   const [phone, setPhone] = useState('');
   const [emirate, setEmirate] = useState('');
   const [address, setAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [upsellVisible, setUpsellVisible] = useState(false);
   const [upsellProductSlug, setUpsellProductSlug] = useState<string | null>(null);
+
+  const totals = useMemo(
+    () => calcCheckoutTotals(total, paymentMethod),
+    [total, paymentMethod],
+  );
 
   const upsellProduct = useMemo(
     () => (upsellProductSlug ? getProductBySlug(upsellProductSlug) : undefined),
@@ -64,16 +70,18 @@ export function CheckoutModal() {
         return;
       }
 
-      const { orderId, orderIds } = await submitOrder({
+      const result = await submitOrder({
         customerName: name.trim(),
         phone: phone.trim(),
         area: area.trim(),
+        paymentMethod,
         sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
         items: items.map((i) => ({
           sku: i.sku,
           name: i.offerLabel,
           slug: i.slug,
-          quantity: i.offerQuantity * i.qty,
+          bundleId: i.offerId,
+          quantity: i.qty,
           lineTotal: i.price * i.qty,
         })),
       });
@@ -81,8 +89,8 @@ export function CheckoutModal() {
       sessionStorage.setItem(
         'lara-last-order',
         JSON.stringify({
-          orderId,
-          orderIds,
+          orderId: result.orderId,
+          orderIds: result.orderIds,
           customerName: name.trim(),
           phone: phoneE164,
           area: area.trim(),
@@ -91,14 +99,24 @@ export function CheckoutModal() {
             qty: i.qty,
             price: i.price * i.qty,
           })),
-          total,
+          subtotal: totals.subtotal,
+          deliveryFee: totals.deliveryFee,
+          total: result.totalAed ?? totals.total,
+          paymentMethod: result.paymentMethod,
           currency: orderCurrency,
         }),
       );
 
+      if (result.paymentMethod === 'CARD' && result.checkoutUrl) {
+        clear();
+        setOpen(false);
+        window.location.href = result.checkoutUrl;
+        return;
+      }
+
       const firstSlug = items[0]?.slug;
       const prod = firstSlug ? getProductBySlug(firstSlug) : products[0];
-      if (prod?.upsell.enabled) {
+      if (prod?.upsell.enabled && paymentMethod === 'COD') {
         setUpsellProductSlug(prod.slug);
         setUpsellVisible(true);
         trackEvent('UpsellView', { product_id: prod.id, value: prod.upsell.price });
@@ -106,18 +124,20 @@ export function CheckoutModal() {
           setUpsellVisible(false);
           clear();
           setOpen(false);
-          router.push(`/thank-you?order=${orderId}`);
+          router.push(`/thank-you?order=${result.orderId}`);
         }, 12000);
         return;
       }
 
       clear();
       setOpen(false);
-      router.push(`/thank-you?order=${orderId}`);
+      router.push(`/thank-you?order=${result.orderId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
       if (message === 'invalid_phone' || message.includes('جوال')) {
         setError(message);
+      } else if (message === 'stripe_not_configured') {
+        setError('الدفع بالبطاقة غير متاح حالياً — جربي الدفع عند الاستلام');
       } else if (message === 'order_failed' || message === 'sheet_sync_failed') {
         setError('ما قدرنا نسجّل الطلب ف الشيت — تأكدي من رقم الجوال (يبدأ بـ 5) وحاولي مرة ثانية');
       } else if (message) {
@@ -154,6 +174,15 @@ export function CheckoutModal() {
     router.push(`/thank-you?order=${orderId}`);
   }
 
+  const submitLabel =
+    paymentMethod === 'CARD'
+      ? loading
+        ? 'جاري التحويل للدفع...'
+        : 'ادفعي بالبطاقة — شحن مجاني'
+      : loading
+        ? 'جاري الإرسال...'
+        : 'أكّدي الطلب — COD';
+
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
       <div
@@ -188,7 +217,7 @@ export function CheckoutModal() {
           <>
             <div className="mb-4 flex items-center justify-between">
               <h2 id="checkout-title" className="font-arabic text-lg font-bold text-primary">
-                تأكيد الطلب — دفع عند الاستلام
+                تأكيد الطلب
               </h2>
               <button
                 type="button"
@@ -216,9 +245,54 @@ export function CheckoutModal() {
                     </li>
                   ))}
                 </ul>
-                <p className="mb-4 text-left font-arabic text-base font-bold text-primary">
-                  المجموع: {formatPrice(total)}
-                </p>
+
+                <div className="mb-4 space-y-1 text-sm">
+                  <div className="flex justify-between text-muted">
+                    <span>المجموع</span>
+                    <span>{formatPrice(totals.subtotal)}</span>
+                  </div>
+                  {paymentMethod === 'COD' ? (
+                    <div className="flex justify-between text-muted">
+                      <span>{cod.deliveryFeeLabel}</span>
+                      <span>+{formatPrice(totals.deliveryFee)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between text-emerald-700">
+                      <span>{card.freeShippingLabel}</span>
+                      <span>0 {market.currencySymbol}</span>
+                    </div>
+                  )}
+                  <p className="pt-1 text-left font-arabic text-base font-bold text-primary">
+                    الإجمالي: {formatPrice(totals.total)}
+                  </p>
+                </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('COD')}
+                    className={`rounded-xl border px-3 py-3 text-xs font-bold transition ${
+                      paymentMethod === 'COD'
+                        ? 'border-primary bg-primary-soft text-primary'
+                        : 'border-border bg-surface text-muted'
+                    }`}
+                  >
+                    {cod.paymentLabel}
+                    <span className="mt-1 block font-normal">+{formatPrice(cod.deliveryFeeAed)} توصيل</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('CARD')}
+                    className={`rounded-xl border px-3 py-3 text-xs font-bold transition ${
+                      paymentMethod === 'CARD'
+                        ? 'border-primary bg-primary-soft text-primary'
+                        : 'border-border bg-surface text-muted'
+                    }`}
+                  >
+                    {card.paymentLabel}
+                    <span className="mt-1 block font-normal">{card.freeShippingLabel}</span>
+                  </button>
+                </div>
 
                 <form onSubmit={submit} className="space-y-3">
                   <div>
@@ -281,7 +355,7 @@ export function CheckoutModal() {
                     disabled={loading}
                     className="w-full rounded-xl bg-primary py-4 font-arabic text-sm font-bold text-white disabled:opacity-60"
                   >
-                    {loading ? 'جاري الإرسال...' : 'أكّدي الطلب — COD'}
+                    {submitLabel}
                   </button>
                 </form>
               </>

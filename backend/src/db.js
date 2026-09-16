@@ -73,6 +73,11 @@ export async function initDb() {
       total_amount DECIMAL(10,3) NOT NULL,
       currency CHAR(3) DEFAULT 'AED',
       payment_method VARCHAR(10) DEFAULT 'COD',
+      delivery_fee DECIMAL(10,3) DEFAULT 0,
+      payment_status VARCHAR(20) DEFAULT 'cod_pending',
+      stripe_checkout_session_id VARCHAR(255),
+      stripe_payment_intent_id VARCHAR(255),
+      paid_at TIMESTAMPTZ,
       status VARCHAR(30) DEFAULT 'pending_confirmation',
       upsell_accepted BOOLEAN DEFAULT false,
       upsell_product_id VARCHAR(50),
@@ -109,6 +114,12 @@ export async function initDb() {
   `);
 
   await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS sheet_sync_error TEXT`);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee DECIMAL(10,3) DEFAULT 0`);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'cod_pending'`);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)`);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_payment_intent_id VARCHAR(255)`);
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE orders ALTER COLUMN payment_method TYPE VARCHAR(10)`);
 
   await renameColumnIfExists('orders', 'subtotal_kwd', 'subtotal_amount');
   await renameColumnIfExists('orders', 'total_kwd', 'total_amount');
@@ -135,10 +146,12 @@ export async function createOrder(order, items) {
     const r = await client.query(
       `INSERT INTO orders (
         order_number, customer_name, phone_e164, area_notes,
-        subtotal_amount, total_amount, currency, payment_method, status,
+        subtotal_amount, total_amount, delivery_fee, currency,
+        payment_method, payment_status, status,
+        stripe_checkout_session_id, stripe_payment_intent_id, paid_at,
         upsell_accepted, upsell_product_id, upsell_amount,
         event_id, source_url, client_ip
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
       RETURNING id`,
       [
         order.orderNumber,
@@ -147,9 +160,14 @@ export async function createOrder(order, items) {
         order.areaNotes || null,
         order.subtotalAmount,
         order.totalAmount,
+        order.deliveryFee ?? 0,
         order.currency || 'AED',
         order.paymentMethod || 'COD',
+        order.paymentStatus || (order.paymentMethod === 'CARD' ? 'pending' : 'cod_pending'),
         order.status || 'pending_confirmation',
+        order.stripeCheckoutSessionId || null,
+        order.stripePaymentIntentId || null,
+        order.paidAt || null,
         order.upsellAccepted || false,
         order.upsellProductId || null,
         order.upsellAmount || null,
@@ -199,6 +217,60 @@ export async function markSheetSynced(orderNumber, error) {
   } catch (err) {
     log.warn('markSheetSynced failed', err.message);
   }
+}
+
+export async function getOrderByNumber(orderNumber) {
+  if (!pool) return null;
+  const r = await pool.query(
+    `SELECT * FROM orders WHERE order_number = $1 LIMIT 1`,
+    [orderNumber],
+  );
+  return r.rows[0] || null;
+}
+
+export async function getOrderByStripeSession(sessionId) {
+  if (!pool) return null;
+  const r = await pool.query(
+    `SELECT * FROM orders WHERE stripe_checkout_session_id = $1 LIMIT 1`,
+    [sessionId],
+  );
+  return r.rows[0] || null;
+}
+
+export async function getOrderItems(orderId) {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT * FROM order_items WHERE order_id = $1 ORDER BY id`,
+    [orderId],
+  );
+  return r.rows;
+}
+
+export async function updateOrderStripeSession(orderNumber, sessionId, paymentIntentId) {
+  if (!pool) throw new Error('database_unavailable');
+  await pool.query(
+    `UPDATE orders
+     SET stripe_checkout_session_id = $2,
+         stripe_payment_intent_id = COALESCE($3, stripe_payment_intent_id)
+     WHERE order_number = $1`,
+    [orderNumber, sessionId, paymentIntentId || null],
+  );
+}
+
+export async function markOrderPaid(orderNumber, { sessionId, paymentIntentId } = {}) {
+  if (!pool) throw new Error('database_unavailable');
+  const r = await pool.query(
+    `UPDATE orders
+     SET payment_status = 'paid',
+         status = 'confirmed',
+         paid_at = COALESCE(paid_at, NOW()),
+         stripe_checkout_session_id = COALESCE($2, stripe_checkout_session_id),
+         stripe_payment_intent_id = COALESCE($3, stripe_payment_intent_id)
+     WHERE order_number = $1 AND payment_status <> 'paid'
+     RETURNING *`,
+    [orderNumber, sessionId || null, paymentIntentId || null],
+  );
+  return r.rows[0] || null;
 }
 
 export async function logEvent(eventName, payload, results, clientIp) {

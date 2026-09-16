@@ -34,10 +34,17 @@ export const businessConfig = {
   },
   cod: {
     enabled: true,
-    paymentLabel: 'دفع عند الاستلام — بدون دفع أونلاين',
+    deliveryFeeAed: 20,
+    paymentLabel: 'دفع عند الاستلام',
+    deliveryFeeLabel: 'رسوم التوصيل (COD)',
     deliveryPromise: 'توصيل 2–4 أيام عمل لكل إمارات الدولة',
     confirmationPromise: 'فريقنا يتصل فيك خلال ساعات لتأكيد العنوان',
     returnGuarantee: 'ضمان استرجاع 30 يوم — فلوسك ترجع إذا ما عجبك الروتين',
+  },
+  card: {
+    enabled: true,
+    paymentLabel: 'بطاقة — شحن مجاني',
+    freeShippingLabel: 'شحن مجاني',
   },
   social: {
     instagram: 'https://www.instagram.com/lara_beauty_gcc',

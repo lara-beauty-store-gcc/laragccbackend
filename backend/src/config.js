@@ -69,6 +69,14 @@ export const config = {
     .map((p) => p.replace(/\D/g, ''))
     .filter(Boolean),
 
+  stripe: {
+    secretKey: env('STRIPE_SECRET_KEY'),
+    webhookSecret: env('STRIPE_WEBHOOK_SECRET'),
+    publishableKey: env('STRIPE_PUBLISHABLE_KEY'),
+  },
+
+  codDeliveryFeeAed: Number(env('COD_DELIVERY_FEE_AED', '20')) || 20,
+
   logLevel: env('LOG_LEVEL', 'INFO').toUpperCase(),
 };
 
@@ -80,5 +88,6 @@ export function isConfigured() {
     sheets: Boolean(config.sheetsWebhookUrl),
     database: Boolean(config.databaseUrl),
     maxmind: Boolean(config.maxmind.accountId && config.maxmind.licenseKey),
+    stripe: Boolean(config.stripe.secretKey),
   };
 }

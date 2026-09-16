@@ -1,9 +1,11 @@
 import { businessConfig } from '@/config/business';
+import type { PaymentMethod } from '@/lib/pricing';
 
 export type OrderLinePayload = {
   sku: string;
   name: string;
   slug: string;
+  bundleId?: string;
   quantity: number;
   lineTotal: number;
 };
@@ -14,12 +16,18 @@ export type SubmitOrderPayload = {
   area?: string;
   items: OrderLinePayload[];
   sourceUrl?: string;
+  paymentMethod?: PaymentMethod;
 };
 
 export type SubmitOrderResult = {
   success: boolean;
   orderId: string;
   orderIds: string[];
+  paymentMethod: PaymentMethod;
+  subtotalAed?: number;
+  deliveryFeeAed?: number;
+  totalAed?: number;
+  checkoutUrl?: string;
 };
 
 export async function submitOrder(payload: SubmitOrderPayload): Promise<SubmitOrderResult> {
@@ -38,6 +46,26 @@ export async function submitOrder(payload: SubmitOrderPayload): Promise<SubmitOr
     throw new Error(data.message || data.error || 'order_failed');
   }
 
+  const paymentMethod = (data.paymentMethod || payload.paymentMethod || 'COD') as PaymentMethod;
+
+  if (paymentMethod === 'CARD') {
+    const checkoutUrl = String(data.checkoutUrl || '');
+    const orderId = String(data.orderId || data.orderNumber || '');
+    if (!checkoutUrl || !orderId) {
+      throw new Error('stripe_checkout_failed');
+    }
+    return {
+      success: true,
+      orderId,
+      orderIds: [orderId],
+      paymentMethod,
+      subtotalAed: Number(data.subtotalAed ?? 0),
+      deliveryFeeAed: Number(data.deliveryFeeAed ?? 0),
+      totalAed: Number(data.totalAed ?? data.total ?? 0),
+      checkoutUrl,
+    };
+  }
+
   if (data.sheetSynced === false) {
     throw new Error(data.message || 'sheet_sync_failed');
   }
@@ -49,7 +77,15 @@ export async function submitOrder(payload: SubmitOrderPayload): Promise<SubmitOr
     throw new Error('order_failed');
   }
 
-  return { success: true, orderId, orderIds };
+  return {
+    success: true,
+    orderId,
+    orderIds,
+    paymentMethod: 'COD',
+    subtotalAed: Number(data.subtotalAed ?? 0),
+    deliveryFeeAed: Number(data.deliveryFeeAed ?? 0),
+    totalAed: Number(data.totalAed ?? data.total ?? 0),
+  };
 }
 
 export function formatOrderIdLabel(orderIds: string[]): string {
